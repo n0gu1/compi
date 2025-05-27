@@ -902,6 +902,13 @@ END.
   }
 }
 
+function reproducirAudioCoreografia() {
+  const iframe = document.getElementById('player');
+  const widget = SC.Widget(iframe);
+  widget.seekTo(0);     // Reinicia la canción si ya estaba sonando
+  widget.play();        // Reproduce la canción
+}
+
   
   // ══════════════════════════════════════════════
   //  COREOGRAFÍAS
@@ -919,9 +926,12 @@ function cargarCoreografia(num){
     code.innerText = codigo;
     actualizarLineas();
     resaltar();
-    compilarEjecutar();  // ← Ejecuta al instante después de cargar
+    compilarEjecutar();
+
+    if (num === 1) reproducirAudioCoreografia();  // 🔊 Solo para coreografía 1
   }
 }
+
 
   
   // ══════════════════════════════════════════════
@@ -1069,5 +1079,10 @@ function cargarCoreografia(num){
     resaltar();
   };
 </script>
+<!-- Reproductor de SoundCloud (oculto) -->
+<iframe id="player" style="display:none;" width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"
+  src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/lnytnz/lny-tnz-x-dany-bpm-the-hardest-riddle&auto_play=false"></iframe>
+<script src="https://w.soundcloud.com/player/api.js"></script>
+
 </body>
 </html>
