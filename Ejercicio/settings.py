@@ -116,3 +116,9 @@ EMAIL_USE_TLS       = True
 EMAIL_HOST_USER     = os.getenv("EMAIL_HOST_USER", "javaprueba10@gmail.com")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "qcdkusbfzqqefvtv")
 DEFAULT_FROM_EMAIL  = EMAIL_HOST_USER
+
+
+#  añade esto al final
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+SESSION_COOKIE_HTTPONLY = True       # - recomendado
+SESSION_COOKIE_SECURE   = not DEBUG  #  idem
