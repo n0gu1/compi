@@ -4,10 +4,6 @@ import pymysql
 
 pymysql.install_as_MySQLdb()
 
-# ── parche: engañamos a Django para que crea que el servidor es ≥ 8.0.11 ──
-import django.db.backends.mysql.base as mysql_base
-mysql_base.DatabaseWrapper.get_database_version = lambda self: (8, 0, 11)
-
 # ─── Rutas base ───────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent.parent
 
