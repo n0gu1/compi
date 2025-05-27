@@ -4,21 +4,25 @@ import pymysql
 
 pymysql.install_as_MySQLdb()
 
+# ─── Rutas base ────────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Seguridad
+# ─── Seguridad ────────────────────────────────────────────────────────────────
 SECRET_KEY = os.environ.get("SECRET_KEY", "clave-segura-de-respaldo")
-DEBUG = os.environ.get("DEBUG", "False") == "True"
-ALLOWED_HOSTS = ["*"]
+DEBUG      = os.environ.get("DEBUG", "False") == "True"
+ALLOWED_HOSTS = ["*"]          # cámbialo en producción si lo necesitas
 
-# Archivos estáticos
-STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
-]
+# ─── Archivos estáticos ───────────────────────────────────────────────────────
+STATIC_URL  = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"        # destino de collectstatic
+STATICFILES_DIRS = [BASE_DIR / "static"]      # fuente de tus archivos
 
-# Aplicaciones Django
+# WhiteNoise: compresión + hash en nombre de archivo
+STATICFILES_STORAGE = (
+    "whitenoise.storage.CompressedManifestStaticFilesStorage"
+)
+
+# ─── Aplicaciones instaladas ──────────────────────────────────────────────────
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -28,9 +32,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 ]
 
-# Middleware
+# ─── Middleware ───────────────────────────────────────────────────────────────
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",          # ← nuevo
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -39,14 +44,14 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-# Enrutamiento
+# ─── Enrutamiento ─────────────────────────────────────────────────────────────
 ROOT_URLCONF = "Ejercicio.urls"
 
-# Plantillas
+# ─── Plantillas ───────────────────────────────────────────────────────────────
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, "Ejercicio", "web")],
+        "DIRS": [BASE_DIR / "Ejercicio" / "web"],           # donde están tus .html
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -58,10 +63,10 @@ TEMPLATES = [
     },
 ]
 
-# WSGI
+# ─── WSGI ──────────────────────────────────────────────────────────────────────
 WSGI_APPLICATION = "Ejercicio.wsgi.application"
 
-# Base de datos: MySQL remoto
+# ─── Base de datos (MySQL remoto) ─────────────────────────────────────────────
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
@@ -76,7 +81,7 @@ DATABASES = {
     }
 }
 
-# Validadores de contraseña
+# ─── Validadores de contraseña ────────────────────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -84,20 +89,20 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-# Internacionalización
+# ─── Internacionalización ─────────────────────────────────────────────────────
 LANGUAGE_CODE = "es"
-TIME_ZONE = "America/Guatemala"
-USE_I18N = True
-USE_TZ = True
+TIME_ZONE     = "America/Guatemala"
+USE_I18N      = True
+USE_TZ        = True
 
-# Clave primaria por defecto
+# ─── Clave primaria por defecto ───────────────────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Configuración SMTP (correo)
+# ─── Correo SMTP ──────────────────────────────────────────────────────────────
 EMAIL_BACKEND       = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST          = "smtp.gmail.com"
 EMAIL_PORT          = 587
 EMAIL_USE_TLS       = True
 EMAIL_HOST_USER     = os.environ.get("EMAIL_HOST_USER", "javaprueba10@gmail.com")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "qcdkusb fzqqefvtv")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "qcdkusbfzqqefvtv")
 DEFAULT_FROM_EMAIL  = EMAIL_HOST_USER
