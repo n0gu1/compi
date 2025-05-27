@@ -897,17 +897,18 @@ END.
   const data = await rsp.json();
   if (data.status === "ok") {
       alert("✓ Código ejecutado en el Rover");
+      detenerAudioCoreografia();
   } else {
       alert("⚠️  " + data.msg);
   }
 }
 
-function reproducirAudioCoreografia() {
+function detenerAudioCoreografia() {
   const iframe = document.getElementById('player');
   const widget = SC.Widget(iframe);
-  widget.seekTo(0);     // Reinicia la canción si ya estaba sonando
-  widget.play();        // Reproduce la canción
+  widget.pause();  // Pausa la música
 }
+
 
   
   // ══════════════════════════════════════════════
