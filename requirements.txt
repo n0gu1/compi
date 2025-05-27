@@ -7,3 +7,5 @@ gunicorn
 ply
 requests
 whitenoise==6.6.0
+twilio>=8.0.0
+python-dotenv>=1.0.0
