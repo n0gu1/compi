@@ -1,0 +1,228 @@
+<!-- index.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- FontAwesome -->
+  <script src="https://kit.fontawesome.com/64d58efce2.js" crossorigin="anonymous"></script>
+
+  <link rel="stylesheet" href="{% static 'style.css' %}" />
+  <title>Iniciar sesión y Registrarse</title>
+
+  <style>
+    @media (max-width: 768px) {
+      .input-field { height: 40px !important; margin-bottom: 2px !important; }
+      .input-field input { font-size: 0.8rem !important; }
+      .btn { height: 35px !important; font-size: 0.8rem !important; }
+    }
+
+    /* Estilos para opciones de imagen */
+    .image-options {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .image-options label.btn,
+    .image-options button.btn {
+      padding: 10px 15px;
+      background-color: #4d84e2;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      display: inline-block;
+      text-align: center;
+    }
+    .image-options label.btn:hover,
+    .image-options button.btn:hover {
+      background-color: #3c6fd1;
+    }
+
+    /* Globos de error */
+    .input-field { position: relative; }
+    .error-message {
+      position: absolute;
+      top: 50%;
+      left: calc(100% + 8px);
+      transform: translateY(-50%);
+      background: #f44336;
+      color: #fff;
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      z-index: 9999;
+    }
+    .error-message::after {
+      content: '';
+      position: absolute;
+      right: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 6px solid transparent;
+      border-right-color: #f44336;
+    }
+    .error-visible { opacity: 1; }
+    .input-error { border: 1px solid #f44336 !important; }
+
+    /* Permitir que sobresalgan los globos */
+    .input-field,
+    .forms-container,
+    .signin-signup {
+      overflow: visible;
+    }
+
+    @media (max-width: 480px) {
+      .error-message {
+        top: -6px;
+        left: 42px;
+        transform: translateY(-100%);
+      }
+      .error-message::after {
+        left: 12px;
+        top: 100%;
+        border-right-color: transparent;
+        border-top-color: #f44336;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="forms-container">
+      <div class="signin-signup">
+
+        <!-- FORMULARIO LOGIN -->
+     <form action="{% url 'login_view' %}" method="post" class="sign-in-form">
+  {% csrf_token %}
+  <h2 class="title">Iniciar sesión</h2>
+
+  <div class="input-field">
+    <i class="fas fa-user"></i>
+    <input name="nickname" type="text" placeholder="Nickname" required />
+  </div>
+
+  <div class="input-field">
+    <i class="fas fa-lock"></i>
+    <input name="password" type="password" placeholder="Contraseña" required />
+  </div>
+
+  <input type="submit" value="Iniciar sesión" class="btn solid" />
+  {% if login_error %}
+    <p style="color: red; font-size: 0.85rem;">{{ login_error }}</p>
+  {% endif %}
+</form>
+
+
+        <!-- FORMULARIO REGISTRO -->
+        <form id="signup-form"
+              action="{% url 'registro_pdf' %}"
+              method="post"
+              enctype="multipart/form-data"
+              class="sign-up-form">
+          {% csrf_token %}
+          <!-- <h2 class="title">Registrarse</h2> -->
+
+          <div class="input-field" style="height:45px;margin-bottom:3px;">
+  <i class="fas fa-user"></i>
+  <input
+    id="reg-nombre"
+    name="nombre"
+    type="text"
+    placeholder="Nombre completo"
+    style="height:100%;"
+    required
+  />
+  <span id="error-nombre" class="error-message"></span>
+</div>
+
+          <div class="input-field" style="height:45px;margin-bottom:3px;">
+            <i class="fas fa-user"></i>
+            <input id="reg-nickname" name="nickname" type="text" placeholder="Nickname" style="height:100%;" />
+            <span id="error-nickname" class="error-message"></span>
+          </div>
+          <div class="input-field" style="height:45px;margin-bottom:3px;">
+            <i class="fas fa-envelope"></i>
+            <input id="reg-email" name="email" type="email" placeholder="Correo electrónico" style="height:100%;" />
+            <span id="error-email" class="error-message"></span>
+          </div>
+          <div class="input-field" style="height:45px;margin-bottom:3px;">
+            <i class="fas fa-envelope"></i>
+            <input id="reg-email-confirm" name="email_confirm" type="email" placeholder="Confirmar correo" style="height:100%;" />
+            <span id="error-email-confirm" class="error-message"></span>
+          </div>
+          <div class="input-field" style="height:45px;margin-bottom:3px;">
+            <i class="fas fa-phone"></i>
+            <input id="reg-phone" name="phone" type="text" placeholder="Número de teléfono" style="height:100%;" />
+            <span id="error-phone" class="error-message"></span>
+          </div>
+          <div class="input-field" style="height:45px;margin-bottom:3px;">
+            <i class="fas fa-phone"></i>
+            <input id="reg-phone-confirm" name="phone_confirm" type="text" placeholder="Confirmar teléfono" style="height:100%;" />
+            <span id="error-phone-confirm" class="error-message"></span>
+          </div>
+          <div class="input-field" style="height:45px;margin-bottom:3px;">
+            <i class="fas fa-lock"></i>
+            <input id="reg-password" name="password" type="password" placeholder="Contraseña" style="height:100%;" />
+            <span id="error-password" class="error-message"></span>
+          </div>
+          <div class="input-field" style="height:45px;margin-bottom:3px;">
+            <i class="fas fa-lock"></i>
+            <input id="reg-password-confirm" name="password_confirm" type="password" placeholder="Confirmar contraseña" style="height:100%;" />
+            <span id="error-password-confirm" class="error-message"></span>
+          </div>
+
+          <!-- Opciones de imagen -->
+          <div class="image-options">
+            <label for="file-input" class="btn">Subir imagen</label>
+            <button type="button" id="take-photo-btn" class="btn">Tomar foto</button>
+          </div>
+          <input id="file-input"
+       name="profile_image"
+       type="file"
+       accept="image/*"
+       style="display:none;"
+       required />
+
+
+          <video id="video" width="300" height="200" autoplay style="display:none;"></video>
+          <canvas id="canvas" style="display:none;"></canvas>
+
+          <input type="submit" class="btn" value="Registrarse" />
+        </form>
+
+      </div>
+    </div>
+
+    <!-- PANELES DE TRANSICIÓN -->
+    <div class="panels-container">
+      <div class="panel left-panel">
+        <div class="content">
+          <h3>¿Eres nuevo aquí?</h3>
+          <p>Completa el formulario y accede al sistema de exploración del rover.</p>
+          <button id="sign-up-btn" class="btn transparent">Regístrate</button>
+        </div>
+        <img src="{% static 'img/log.svg' %}" class="image" alt="Imagen de bienvenida" />
+      </div>
+      <div class="panel right-panel">
+        <div class="content">
+          <h3>Inicia sesión</h3>
+          <p>Para acceder al sistema de exploración y controlar el rover en tiempo real.</p>
+          <button id="sign-in-btn" class="btn transparent">Iniciar sesión</button>
+        </div>
+        <img src="{% static 'img/register.svg' %}" class="image" alt="Imagen de registro" />
+      </div>
+    </div>
+  </div>
+
+  <script src="{% static 'app.js' %}" defer></script>
+</body>
+</html>

@@ -1,0 +1,691 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Grammar
+
+Rule 0     S' -> program
+Rule 1     program -> PROGRAM ID BEGIN sentence_list END DOT
+Rule 2     sentence_list -> sentence_list sentence
+Rule 3     sentence_list -> sentence
+Rule 4     sentence -> instruction SEMICOLON
+Rule 5     instruction -> move_instr
+Rule 6     instruction -> draw_instr
+Rule 7     instruction -> instruction PLUS instruction
+Rule 8     move_instr -> girar
+Rule 9     move_instr -> avanzar_vlts
+Rule 10    move_instr -> avanzar_ctms
+Rule 11    move_instr -> avanzar_mts
+Rule 12    move_instr -> rotar
+Rule 13    move_instr -> caminar
+Rule 14    move_instr -> moonwalk
+Rule 15    girar -> GIRAR LPAREN NUMBER RPAREN
+Rule 16    avanzar_vlts -> AVANZAR_VLTS LPAREN NUMBER RPAREN
+Rule 17    avanzar_ctms -> AVANZAR_CTMS LPAREN NUMBER RPAREN
+Rule 18    avanzar_mts -> AVANZAR_MTS LPAREN NUMBER RPAREN
+Rule 19    rotar -> ROTAR LPAREN NUMBER RPAREN
+Rule 20    caminar -> CAMINAR LPAREN NUMBER RPAREN
+Rule 21    moonwalk -> MOONWALK LPAREN NUMBER RPAREN
+Rule 22    draw_instr -> circulo
+Rule 23    draw_instr -> cuadrado
+Rule 24    circulo -> CIRCULO LPAREN NUMBER RPAREN
+Rule 25    cuadrado -> CUADRADO LPAREN NUMBER RPAREN
+
+Terminals, with rules where they appear
+
+AVANZAR_CTMS         : 17
+AVANZAR_MTS          : 18
+AVANZAR_VLTS         : 16
+BEGIN                : 1
+CAMINAR              : 20
+CIRCULO              : 24
+CUADRADO             : 25
+DOT                  : 1
+END                  : 1
+GIRAR                : 15
+ID                   : 1
+LPAREN               : 15 16 17 18 19 20 21 24 25
+MOONWALK             : 21
+NUMBER               : 15 16 17 18 19 20 21 24 25
+PLUS                 : 7
+PROGRAM              : 1
+ROTAR                : 19
+RPAREN               : 15 16 17 18 19 20 21 24 25
+SEMICOLON            : 4
+error                : 
+
+Nonterminals, with rules where they appear
+
+avanzar_ctms         : 10
+avanzar_mts          : 11
+avanzar_vlts         : 9
+caminar              : 13
+circulo              : 22
+cuadrado             : 23
+draw_instr           : 6
+girar                : 8
+instruction          : 4 7 7
+moonwalk             : 14
+move_instr           : 5
+program              : 0
+rotar                : 12
+sentence             : 2 3
+sentence_list        : 1 2
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . program
+    (1) program -> . PROGRAM ID BEGIN sentence_list END DOT
+
+    PROGRAM         shift and go to state 2
+
+    program                        shift and go to state 1
+
+state 1
+
+    (0) S' -> program .
+
+
+
+state 2
+
+    (1) program -> PROGRAM . ID BEGIN sentence_list END DOT
+
+    ID              shift and go to state 3
+
+
+state 3
+
+    (1) program -> PROGRAM ID . BEGIN sentence_list END DOT
+
+    BEGIN           shift and go to state 4
+
+
+state 4
+
+    (1) program -> PROGRAM ID BEGIN . sentence_list END DOT
+    (2) sentence_list -> . sentence_list sentence
+    (3) sentence_list -> . sentence
+    (4) sentence -> . instruction SEMICOLON
+    (5) instruction -> . move_instr
+    (6) instruction -> . draw_instr
+    (7) instruction -> . instruction PLUS instruction
+    (8) move_instr -> . girar
+    (9) move_instr -> . avanzar_vlts
+    (10) move_instr -> . avanzar_ctms
+    (11) move_instr -> . avanzar_mts
+    (12) move_instr -> . rotar
+    (13) move_instr -> . caminar
+    (14) move_instr -> . moonwalk
+    (22) draw_instr -> . circulo
+    (23) draw_instr -> . cuadrado
+    (15) girar -> . GIRAR LPAREN NUMBER RPAREN
+    (16) avanzar_vlts -> . AVANZAR_VLTS LPAREN NUMBER RPAREN
+    (17) avanzar_ctms -> . AVANZAR_CTMS LPAREN NUMBER RPAREN
+    (18) avanzar_mts -> . AVANZAR_MTS LPAREN NUMBER RPAREN
+    (19) rotar -> . ROTAR LPAREN NUMBER RPAREN
+    (20) caminar -> . CAMINAR LPAREN NUMBER RPAREN
+    (21) moonwalk -> . MOONWALK LPAREN NUMBER RPAREN
+    (24) circulo -> . CIRCULO LPAREN NUMBER RPAREN
+    (25) cuadrado -> . CUADRADO LPAREN NUMBER RPAREN
+
+    GIRAR           shift and go to state 19
+    AVANZAR_VLTS    shift and go to state 20
+    AVANZAR_CTMS    shift and go to state 21
+    AVANZAR_MTS     shift and go to state 22
+    ROTAR           shift and go to state 23
+    CAMINAR         shift and go to state 24
+    MOONWALK        shift and go to state 25
+    CIRCULO         shift and go to state 26
+    CUADRADO        shift and go to state 27
+
+    sentence_list                  shift and go to state 5
+    sentence                       shift and go to state 6
+    instruction                    shift and go to state 7
+    move_instr                     shift and go to state 8
+    draw_instr                     shift and go to state 9
+    girar                          shift and go to state 10
+    avanzar_vlts                   shift and go to state 11
+    avanzar_ctms                   shift and go to state 12
+    avanzar_mts                    shift and go to state 13
+    rotar                          shift and go to state 14
+    caminar                        shift and go to state 15
+    moonwalk                       shift and go to state 16
+    circulo                        shift and go to state 17
+    cuadrado                       shift and go to state 18
+
+state 5
+
+    (1) program -> PROGRAM ID BEGIN sentence_list . END DOT
+    (2) sentence_list -> sentence_list . sentence
+    (4) sentence -> . instruction SEMICOLON
+    (5) instruction -> . move_instr
+    (6) instruction -> . draw_instr
+    (7) instruction -> . instruction PLUS instruction
+    (8) move_instr -> . girar
+    (9) move_instr -> . avanzar_vlts
+    (10) move_instr -> . avanzar_ctms
+    (11) move_instr -> . avanzar_mts
+    (12) move_instr -> . rotar
+    (13) move_instr -> . caminar
+    (14) move_instr -> . moonwalk
+    (22) draw_instr -> . circulo
+    (23) draw_instr -> . cuadrado
+    (15) girar -> . GIRAR LPAREN NUMBER RPAREN
+    (16) avanzar_vlts -> . AVANZAR_VLTS LPAREN NUMBER RPAREN
+    (17) avanzar_ctms -> . AVANZAR_CTMS LPAREN NUMBER RPAREN
+    (18) avanzar_mts -> . AVANZAR_MTS LPAREN NUMBER RPAREN
+    (19) rotar -> . ROTAR LPAREN NUMBER RPAREN
+    (20) caminar -> . CAMINAR LPAREN NUMBER RPAREN
+    (21) moonwalk -> . MOONWALK LPAREN NUMBER RPAREN
+    (24) circulo -> . CIRCULO LPAREN NUMBER RPAREN
+    (25) cuadrado -> . CUADRADO LPAREN NUMBER RPAREN
+
+    END             shift and go to state 28
+    GIRAR           shift and go to state 19
+    AVANZAR_VLTS    shift and go to state 20
+    AVANZAR_CTMS    shift and go to state 21
+    AVANZAR_MTS     shift and go to state 22
+    ROTAR           shift and go to state 23
+    CAMINAR         shift and go to state 24
+    MOONWALK        shift and go to state 25
+    CIRCULO         shift and go to state 26
+    CUADRADO        shift and go to state 27
+
+    sentence                       shift and go to state 29
+    instruction                    shift and go to state 7
+    move_instr                     shift and go to state 8
+    draw_instr                     shift and go to state 9
+    girar                          shift and go to state 10
+    avanzar_vlts                   shift and go to state 11
+    avanzar_ctms                   shift and go to state 12
+    avanzar_mts                    shift and go to state 13
+    rotar                          shift and go to state 14
+    caminar                        shift and go to state 15
+    moonwalk                       shift and go to state 16
+    circulo                        shift and go to state 17
+    cuadrado                       shift and go to state 18
+
+state 6
+
+    (3) sentence_list -> sentence .
+
+    END             reduce using rule 3 (sentence_list -> sentence .)
+    GIRAR           reduce using rule 3 (sentence_list -> sentence .)
+    AVANZAR_VLTS    reduce using rule 3 (sentence_list -> sentence .)
+    AVANZAR_CTMS    reduce using rule 3 (sentence_list -> sentence .)
+    AVANZAR_MTS     reduce using rule 3 (sentence_list -> sentence .)
+    ROTAR           reduce using rule 3 (sentence_list -> sentence .)
+    CAMINAR         reduce using rule 3 (sentence_list -> sentence .)
+    MOONWALK        reduce using rule 3 (sentence_list -> sentence .)
+    CIRCULO         reduce using rule 3 (sentence_list -> sentence .)
+    CUADRADO        reduce using rule 3 (sentence_list -> sentence .)
+
+
+state 7
+
+    (4) sentence -> instruction . SEMICOLON
+    (7) instruction -> instruction . PLUS instruction
+
+    SEMICOLON       shift and go to state 30
+    PLUS            shift and go to state 31
+
+
+state 8
+
+    (5) instruction -> move_instr .
+
+    SEMICOLON       reduce using rule 5 (instruction -> move_instr .)
+    PLUS            reduce using rule 5 (instruction -> move_instr .)
+
+
+state 9
+
+    (6) instruction -> draw_instr .
+
+    SEMICOLON       reduce using rule 6 (instruction -> draw_instr .)
+    PLUS            reduce using rule 6 (instruction -> draw_instr .)
+
+
+state 10
+
+    (8) move_instr -> girar .
+
+    SEMICOLON       reduce using rule 8 (move_instr -> girar .)
+    PLUS            reduce using rule 8 (move_instr -> girar .)
+
+
+state 11
+
+    (9) move_instr -> avanzar_vlts .
+
+    SEMICOLON       reduce using rule 9 (move_instr -> avanzar_vlts .)
+    PLUS            reduce using rule 9 (move_instr -> avanzar_vlts .)
+
+
+state 12
+
+    (10) move_instr -> avanzar_ctms .
+
+    SEMICOLON       reduce using rule 10 (move_instr -> avanzar_ctms .)
+    PLUS            reduce using rule 10 (move_instr -> avanzar_ctms .)
+
+
+state 13
+
+    (11) move_instr -> avanzar_mts .
+
+    SEMICOLON       reduce using rule 11 (move_instr -> avanzar_mts .)
+    PLUS            reduce using rule 11 (move_instr -> avanzar_mts .)
+
+
+state 14
+
+    (12) move_instr -> rotar .
+
+    SEMICOLON       reduce using rule 12 (move_instr -> rotar .)
+    PLUS            reduce using rule 12 (move_instr -> rotar .)
+
+
+state 15
+
+    (13) move_instr -> caminar .
+
+    SEMICOLON       reduce using rule 13 (move_instr -> caminar .)
+    PLUS            reduce using rule 13 (move_instr -> caminar .)
+
+
+state 16
+
+    (14) move_instr -> moonwalk .
+
+    SEMICOLON       reduce using rule 14 (move_instr -> moonwalk .)
+    PLUS            reduce using rule 14 (move_instr -> moonwalk .)
+
+
+state 17
+
+    (22) draw_instr -> circulo .
+
+    SEMICOLON       reduce using rule 22 (draw_instr -> circulo .)
+    PLUS            reduce using rule 22 (draw_instr -> circulo .)
+
+
+state 18
+
+    (23) draw_instr -> cuadrado .
+
+    SEMICOLON       reduce using rule 23 (draw_instr -> cuadrado .)
+    PLUS            reduce using rule 23 (draw_instr -> cuadrado .)
+
+
+state 19
+
+    (15) girar -> GIRAR . LPAREN NUMBER RPAREN
+
+    LPAREN          shift and go to state 32
+
+
+state 20
+
+    (16) avanzar_vlts -> AVANZAR_VLTS . LPAREN NUMBER RPAREN
+
+    LPAREN          shift and go to state 33
+
+
+state 21
+
+    (17) avanzar_ctms -> AVANZAR_CTMS . LPAREN NUMBER RPAREN
+
+    LPAREN          shift and go to state 34
+
+
+state 22
+
+    (18) avanzar_mts -> AVANZAR_MTS . LPAREN NUMBER RPAREN
+
+    LPAREN          shift and go to state 35
+
+
+state 23
+
+    (19) rotar -> ROTAR . LPAREN NUMBER RPAREN
+
+    LPAREN          shift and go to state 36
+
+
+state 24
+
+    (20) caminar -> CAMINAR . LPAREN NUMBER RPAREN
+
+    LPAREN          shift and go to state 37
+
+
+state 25
+
+    (21) moonwalk -> MOONWALK . LPAREN NUMBER RPAREN
+
+    LPAREN          shift and go to state 38
+
+
+state 26
+
+    (24) circulo -> CIRCULO . LPAREN NUMBER RPAREN
+
+    LPAREN          shift and go to state 39
+
+
+state 27
+
+    (25) cuadrado -> CUADRADO . LPAREN NUMBER RPAREN
+
+    LPAREN          shift and go to state 40
+
+
+state 28
+
+    (1) program -> PROGRAM ID BEGIN sentence_list END . DOT
+
+    DOT             shift and go to state 41
+
+
+state 29
+
+    (2) sentence_list -> sentence_list sentence .
+
+    END             reduce using rule 2 (sentence_list -> sentence_list sentence .)
+    GIRAR           reduce using rule 2 (sentence_list -> sentence_list sentence .)
+    AVANZAR_VLTS    reduce using rule 2 (sentence_list -> sentence_list sentence .)
+    AVANZAR_CTMS    reduce using rule 2 (sentence_list -> sentence_list sentence .)
+    AVANZAR_MTS     reduce using rule 2 (sentence_list -> sentence_list sentence .)
+    ROTAR           reduce using rule 2 (sentence_list -> sentence_list sentence .)
+    CAMINAR         reduce using rule 2 (sentence_list -> sentence_list sentence .)
+    MOONWALK        reduce using rule 2 (sentence_list -> sentence_list sentence .)
+    CIRCULO         reduce using rule 2 (sentence_list -> sentence_list sentence .)
+    CUADRADO        reduce using rule 2 (sentence_list -> sentence_list sentence .)
+
+
+state 30
+
+    (4) sentence -> instruction SEMICOLON .
+
+    END             reduce using rule 4 (sentence -> instruction SEMICOLON .)
+    GIRAR           reduce using rule 4 (sentence -> instruction SEMICOLON .)
+    AVANZAR_VLTS    reduce using rule 4 (sentence -> instruction SEMICOLON .)
+    AVANZAR_CTMS    reduce using rule 4 (sentence -> instruction SEMICOLON .)
+    AVANZAR_MTS     reduce using rule 4 (sentence -> instruction SEMICOLON .)
+    ROTAR           reduce using rule 4 (sentence -> instruction SEMICOLON .)
+    CAMINAR         reduce using rule 4 (sentence -> instruction SEMICOLON .)
+    MOONWALK        reduce using rule 4 (sentence -> instruction SEMICOLON .)
+    CIRCULO         reduce using rule 4 (sentence -> instruction SEMICOLON .)
+    CUADRADO        reduce using rule 4 (sentence -> instruction SEMICOLON .)
+
+
+state 31
+
+    (7) instruction -> instruction PLUS . instruction
+    (5) instruction -> . move_instr
+    (6) instruction -> . draw_instr
+    (7) instruction -> . instruction PLUS instruction
+    (8) move_instr -> . girar
+    (9) move_instr -> . avanzar_vlts
+    (10) move_instr -> . avanzar_ctms
+    (11) move_instr -> . avanzar_mts
+    (12) move_instr -> . rotar
+    (13) move_instr -> . caminar
+    (14) move_instr -> . moonwalk
+    (22) draw_instr -> . circulo
+    (23) draw_instr -> . cuadrado
+    (15) girar -> . GIRAR LPAREN NUMBER RPAREN
+    (16) avanzar_vlts -> . AVANZAR_VLTS LPAREN NUMBER RPAREN
+    (17) avanzar_ctms -> . AVANZAR_CTMS LPAREN NUMBER RPAREN
+    (18) avanzar_mts -> . AVANZAR_MTS LPAREN NUMBER RPAREN
+    (19) rotar -> . ROTAR LPAREN NUMBER RPAREN
+    (20) caminar -> . CAMINAR LPAREN NUMBER RPAREN
+    (21) moonwalk -> . MOONWALK LPAREN NUMBER RPAREN
+    (24) circulo -> . CIRCULO LPAREN NUMBER RPAREN
+    (25) cuadrado -> . CUADRADO LPAREN NUMBER RPAREN
+
+    GIRAR           shift and go to state 19
+    AVANZAR_VLTS    shift and go to state 20
+    AVANZAR_CTMS    shift and go to state 21
+    AVANZAR_MTS     shift and go to state 22
+    ROTAR           shift and go to state 23
+    CAMINAR         shift and go to state 24
+    MOONWALK        shift and go to state 25
+    CIRCULO         shift and go to state 26
+    CUADRADO        shift and go to state 27
+
+    instruction                    shift and go to state 42
+    move_instr                     shift and go to state 8
+    draw_instr                     shift and go to state 9
+    girar                          shift and go to state 10
+    avanzar_vlts                   shift and go to state 11
+    avanzar_ctms                   shift and go to state 12
+    avanzar_mts                    shift and go to state 13
+    rotar                          shift and go to state 14
+    caminar                        shift and go to state 15
+    moonwalk                       shift and go to state 16
+    circulo                        shift and go to state 17
+    cuadrado                       shift and go to state 18
+
+state 32
+
+    (15) girar -> GIRAR LPAREN . NUMBER RPAREN
+
+    NUMBER          shift and go to state 43
+
+
+state 33
+
+    (16) avanzar_vlts -> AVANZAR_VLTS LPAREN . NUMBER RPAREN
+
+    NUMBER          shift and go to state 44
+
+
+state 34
+
+    (17) avanzar_ctms -> AVANZAR_CTMS LPAREN . NUMBER RPAREN
+
+    NUMBER          shift and go to state 45
+
+
+state 35
+
+    (18) avanzar_mts -> AVANZAR_MTS LPAREN . NUMBER RPAREN
+
+    NUMBER          shift and go to state 46
+
+
+state 36
+
+    (19) rotar -> ROTAR LPAREN . NUMBER RPAREN
+
+    NUMBER          shift and go to state 47
+
+
+state 37
+
+    (20) caminar -> CAMINAR LPAREN . NUMBER RPAREN
+
+    NUMBER          shift and go to state 48
+
+
+state 38
+
+    (21) moonwalk -> MOONWALK LPAREN . NUMBER RPAREN
+
+    NUMBER          shift and go to state 49
+
+
+state 39
+
+    (24) circulo -> CIRCULO LPAREN . NUMBER RPAREN
+
+    NUMBER          shift and go to state 50
+
+
+state 40
+
+    (25) cuadrado -> CUADRADO LPAREN . NUMBER RPAREN
+
+    NUMBER          shift and go to state 51
+
+
+state 41
+
+    (1) program -> PROGRAM ID BEGIN sentence_list END DOT .
+
+    $end            reduce using rule 1 (program -> PROGRAM ID BEGIN sentence_list END DOT .)
+
+
+state 42
+
+    (7) instruction -> instruction PLUS instruction .
+    (7) instruction -> instruction . PLUS instruction
+
+  ! shift/reduce conflict for PLUS resolved as shift
+    SEMICOLON       reduce using rule 7 (instruction -> instruction PLUS instruction .)
+    PLUS            shift and go to state 31
+
+  ! PLUS            [ reduce using rule 7 (instruction -> instruction PLUS instruction .) ]
+
+
+state 43
+
+    (15) girar -> GIRAR LPAREN NUMBER . RPAREN
+
+    RPAREN          shift and go to state 52
+
+
+state 44
+
+    (16) avanzar_vlts -> AVANZAR_VLTS LPAREN NUMBER . RPAREN
+
+    RPAREN          shift and go to state 53
+
+
+state 45
+
+    (17) avanzar_ctms -> AVANZAR_CTMS LPAREN NUMBER . RPAREN
+
+    RPAREN          shift and go to state 54
+
+
+state 46
+
+    (18) avanzar_mts -> AVANZAR_MTS LPAREN NUMBER . RPAREN
+
+    RPAREN          shift and go to state 55
+
+
+state 47
+
+    (19) rotar -> ROTAR LPAREN NUMBER . RPAREN
+
+    RPAREN          shift and go to state 56
+
+
+state 48
+
+    (20) caminar -> CAMINAR LPAREN NUMBER . RPAREN
+
+    RPAREN          shift and go to state 57
+
+
+state 49
+
+    (21) moonwalk -> MOONWALK LPAREN NUMBER . RPAREN
+
+    RPAREN          shift and go to state 58
+
+
+state 50
+
+    (24) circulo -> CIRCULO LPAREN NUMBER . RPAREN
+
+    RPAREN          shift and go to state 59
+
+
+state 51
+
+    (25) cuadrado -> CUADRADO LPAREN NUMBER . RPAREN
+
+    RPAREN          shift and go to state 60
+
+
+state 52
+
+    (15) girar -> GIRAR LPAREN NUMBER RPAREN .
+
+    SEMICOLON       reduce using rule 15 (girar -> GIRAR LPAREN NUMBER RPAREN .)
+    PLUS            reduce using rule 15 (girar -> GIRAR LPAREN NUMBER RPAREN .)
+
+
+state 53
+
+    (16) avanzar_vlts -> AVANZAR_VLTS LPAREN NUMBER RPAREN .
+
+    SEMICOLON       reduce using rule 16 (avanzar_vlts -> AVANZAR_VLTS LPAREN NUMBER RPAREN .)
+    PLUS            reduce using rule 16 (avanzar_vlts -> AVANZAR_VLTS LPAREN NUMBER RPAREN .)
+
+
+state 54
+
+    (17) avanzar_ctms -> AVANZAR_CTMS LPAREN NUMBER RPAREN .
+
+    SEMICOLON       reduce using rule 17 (avanzar_ctms -> AVANZAR_CTMS LPAREN NUMBER RPAREN .)
+    PLUS            reduce using rule 17 (avanzar_ctms -> AVANZAR_CTMS LPAREN NUMBER RPAREN .)
+
+
+state 55
+
+    (18) avanzar_mts -> AVANZAR_MTS LPAREN NUMBER RPAREN .
+
+    SEMICOLON       reduce using rule 18 (avanzar_mts -> AVANZAR_MTS LPAREN NUMBER RPAREN .)
+    PLUS            reduce using rule 18 (avanzar_mts -> AVANZAR_MTS LPAREN NUMBER RPAREN .)
+
+
+state 56
+
+    (19) rotar -> ROTAR LPAREN NUMBER RPAREN .
+
+    SEMICOLON       reduce using rule 19 (rotar -> ROTAR LPAREN NUMBER RPAREN .)
+    PLUS            reduce using rule 19 (rotar -> ROTAR LPAREN NUMBER RPAREN .)
+
+
+state 57
+
+    (20) caminar -> CAMINAR LPAREN NUMBER RPAREN .
+
+    SEMICOLON       reduce using rule 20 (caminar -> CAMINAR LPAREN NUMBER RPAREN .)
+    PLUS            reduce using rule 20 (caminar -> CAMINAR LPAREN NUMBER RPAREN .)
+
+
+state 58
+
+    (21) moonwalk -> MOONWALK LPAREN NUMBER RPAREN .
+
+    SEMICOLON       reduce using rule 21 (moonwalk -> MOONWALK LPAREN NUMBER RPAREN .)
+    PLUS            reduce using rule 21 (moonwalk -> MOONWALK LPAREN NUMBER RPAREN .)
+
+
+state 59
+
+    (24) circulo -> CIRCULO LPAREN NUMBER RPAREN .
+
+    SEMICOLON       reduce using rule 24 (circulo -> CIRCULO LPAREN NUMBER RPAREN .)
+    PLUS            reduce using rule 24 (circulo -> CIRCULO LPAREN NUMBER RPAREN .)
+
+
+state 60
+
+    (25) cuadrado -> CUADRADO LPAREN NUMBER RPAREN .
+
+    SEMICOLON       reduce using rule 25 (cuadrado -> CUADRADO LPAREN NUMBER RPAREN .)
+    PLUS            reduce using rule 25 (cuadrado -> CUADRADO LPAREN NUMBER RPAREN .)
+
+WARNING: 
+WARNING: Conflicts:
+WARNING: 
+WARNING: shift/reduce conflict for PLUS in state 42 resolved as shift

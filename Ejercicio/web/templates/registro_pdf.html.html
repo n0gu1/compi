@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>PDF de Registro</title>
+  <style>
+    @page { size: A4; margin: 0; }
+    body { margin: 0; }
+    .pdf-page {
+      position: relative;
+      width: 210mm;  /* ancho A4 */
+      height: 297mm; /* alto A4 */
+      background: url("{{ static 'img/fondo_formulario.png' }}") no-repeat center/cover;
+    }
+    .data {
+      position: absolute;
+      top: 25%;
+      left: 10%;
+      width: 80%;
+      background: rgba(255,255,255,0.8);
+      padding: 10px;
+      font-family: sans-serif;
+    }
+    .data h2 { margin-top: 0; }
+    .data p { margin: 5px 0; }
+  </style>
+</head>
+<body>
+  <div class="pdf-page">
+    <div class="data">
+      <h2>Datos de Registro</h2>
+      <p><strong>Nickname:</strong> {{ nickname }}</p>
+      <p><strong>Correo:</strong> {{ email }}</p>
+      <p><strong>Confirma correo:</strong> {{ email_confirm }}</p>
+      <p><strong>Teléfono:</strong> {{ phone }}</p>
+      <p><strong>Confirma teléfono:</strong> {{ phone_confirm }}</p>
+      <!-- normalmente no mostrarías la contraseña en texto plano, pero si lo deseas: -->
+      <p><strong>Contraseña:</strong> {{ password }}</p>
+      <p><strong>Confirma contraseña:</strong> {{ password_confirm }}</p>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,307 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard de Ingresos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    :root {
+      --primary: #4361ee;
+      --secondary: #3f37c9;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --success: #4cc9f0;
+      --warning: #f72585;
+      --gray: #6c757d;
+      --light-gray: #e9ecef;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #f5f7fb;
+      color: var(--dark);
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--light-gray);
+    }
+    
+    h1 {
+      color: var(--primary);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    h1 i {
+      color: var(--secondary);
+    }
+    
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .stat-card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-card h3 {
+      color: var(--gray);
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .stat-card .value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    
+    .table-container {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    thead {
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      color: white;
+    }
+    
+    th {
+      padding: 15px;
+      text-align: left;
+      font-weight: 500;
+      text-transform: uppercase;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+    }
+    
+    th:first-child {
+      border-top-left-radius: 10px;
+    }
+    
+    th:last-child {
+      border-top-right-radius: 10px;
+    }
+    
+    tbody tr {
+      border-bottom: 1px solid var(--light-gray);
+      transition: background-color 0.2s ease;
+    }
+    
+    tbody tr:last-child {
+      border-bottom: none;
+    }
+    
+    tbody tr:hover {
+      background-color: rgba(67, 97, 238, 0.05);
+    }
+    
+    td {
+      padding: 15px;
+      color: var(--dark);
+    }
+    
+    img.avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--light-gray);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .status {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .status.ingreso {
+      background-color: rgba(76, 201, 240, 0.1);
+      color: var(--success);
+    }
+    
+    .status.salida {
+      background-color: rgba(247, 37, 133, 0.1);
+      color: var(--warning);
+    }
+    
+    .no-image {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: var(--light-gray);
+      color: var(--gray);
+      text-align: center;
+      line-height: 40px;
+      font-size: 14px;
+    }
+    
+    .actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .btn {
+      padding: 8px 15px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--secondary);
+    }
+    
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+    }
+    
+    .btn-outline:hover {
+      background-color: rgba(67, 97, 238, 0.1);
+    }
+    
+    @media (max-width: 768px) {
+      .stats-container {
+        grid-template-columns: 1fr;
+      }
+      
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1><i class="fas fa-door-open"></i> Control de Accesos</h1>
+      <div class="actions">
+        <button class="btn btn-outline"><i class="fas fa-filter"></i> Filtrar</button>
+        <button class="btn btn-primary"><i class="fas fa-download"></i> Exportar</button>
+      </div>
+    </header>
+    
+    <div class="stats-container">
+      <div class="stat-card">
+        <h3>Total Registros</h3>
+        <div class="value">{{ datos|length }}</div>
+      </div>
+      <div class="stat-card">
+        <h3>En Instalaciones</h3>
+        <div class="value">{{ datos|length }}</div>
+      </div>
+      <div class="stat-card">
+        <h3>Ingresos Hoy</h3>
+        <div class="value">{{ datos|length }}</div>
+      </div>
+      <div class="stat-card">
+        <h3>Salidas Hoy</h3>
+        <div class="value">{{ datos|length }}</div>
+      </div>
+    </div>
+    
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Aspirante</th>
+            <th>Foto</th>
+            <th>Ingreso</th>
+            <th>Salida</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in datos %}
+          <tr>
+            <td>#{{ item.id }}</td>
+            <td><strong>{{ item.nombre }}</strong></td>
+            <td>
+              {% if item.avatar %}
+              <img class="avatar" src="data:image/jpeg;base64,{{ item.avatar }}" alt="avatar">
+              {% else %}
+              <div class="no-image"><i class="fas fa-user"></i></div>
+              {% endif %}
+            </td>
+            <td>{{ item.ingreso }}</td>
+            <td>{{ item.salida|default:"---" }}</td>
+            <td>
+              <span class="status {% if item.salida %}salida{% else %}ingreso{% endif %}">
+                {% if item.salida %}Salida{% else %}Dentro{% endif %}
+              </span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+</body>
+</html>

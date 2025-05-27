@@ -1,0 +1,1073 @@
+<!-- editor.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Editor de Código</title>
+
+  <style>
+    /* -------------- RESET BÁSICO -------------- */
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html,body{
+      height:100%;
+      font-family:'Segoe UI',sans-serif;
+      background:#1e1e1e;
+      color:#d4d4d4;
+    }
+  
+    /* -------------- BARRA DE MENÚS -------------- */
+    .menu-bar{display:flex;background:#333;}
+    .menu{list-style:none;display:flex;}
+    .menu>li{
+      position:relative;
+      padding:0 15px;
+      cursor:pointer;
+      line-height:40px;
+      color:#fff;
+    }
+    .menu>li:hover{background:#444;}
+    .submenu{
+      display:none;
+      position:absolute;
+      top:100%;left:0;
+      background:#444;
+      list-style:none;
+      min-width:150px;
+      z-index:10;
+    }
+    .submenu li{padding:8px 15px;color:#fff;}
+    .submenu li:hover{background:#555;}
+    .menu>li:hover .submenu{display:block;}
+  
+    /* -------------- BARRA DE HERRAMIENTAS -------------- */
+    .toolbar{
+      display:flex;
+      align-items:center;
+      padding:5px;
+      background:#252526;
+    }
+    .toolbar select,
+    .toolbar input[type="color"],
+    .toolbar button{
+      margin-right:8px;
+      background:#3c3c3c;
+      color:#fff;
+      border:none;
+      padding:5px;
+      border-radius:3px;
+      font-size:14px;
+    }
+  
+    /* -------------- CONTENEDOR DEL EDITOR -------------- */
+    .editor-container{
+      display:grid;
+      grid-template-columns:3.2em 1fr;
+      height:calc(100% - 80px);
+    }
+  
+    /* --- Columna de números --- */
+    .gutter{
+      background:#1e1e1e;
+      color:#858585;
+      overflow:hidden;
+      user-select:none;
+      padding-top:5px;
+      width:3.2em;
+    }
+    .gutter div{
+      text-align:right;
+      padding:0 5px;
+      font-size:14px;
+      line-height:1.45em;
+    }
+  
+    /* --- Área de texto --- */
+    .editor{
+      position:relative;
+      background:#1e1e1e;
+      overflow:auto;
+    }
+    .editor pre{
+      margin:0;
+      padding:5px;
+      font-family:monospace;
+      font-size:14px;
+      line-height:1.45em;
+      color:#d4d4d4;
+      white-space:pre;
+      outline:none;
+    }
+  
+/* -------------- COLORES DE SINTAXIS -------------- */
+.token.reserved{color:#569CD6;}  /* Palabras reservadas en azul */
+.token.command {color:#4FC1FF;}  /* Comandos en azul claro */
+.token.parens  {color:#4CAF50;}  /* Paréntesis en verde */
+.token.number  {color:#F44336;}  /* Números en rojo */
+.token{font-weight:normal;}
+  
+    /* -------------- RESPONSIVE -------------- */
+    @media(max-width:768px){
+      .menu-bar,
+      .toolbar{flex-wrap:wrap;}
+      .menu>li{flex:1;text-align:center;}
+    }
+
+    /* Estilos para el diálogo de búsqueda */
+    .search-dialog {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      background: #252526;
+      padding: 10px;
+      border: 1px solid #454545;
+      border-radius: 4px;
+      z-index: 1000;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    .search-input {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      border: 1px solid #454545;
+      padding: 5px;
+      width: 200px;
+    }
+
+    .search-button {
+      background: #0e639c;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      margin-left: 5px;
+      cursor: pointer;
+    }
+
+    .search-button:hover {
+      background: #1177bb;
+    }
+
+    .search-matches {
+      color: #858585;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .highlight {
+      background-color: rgba(255, 255, 0, 0.3);
+      border-bottom: 1px solid yellow;
+    }
+
+    .current-highlight {
+      background-color: rgba(255, 165, 0, 0.5);
+      border-bottom: 2px solid orange;
+    }
+  </style>
+</head>
+
+<!-- ───── Modal del simulador 2‑D ───── -->
+<div id="simModal" style="display:none;position:fixed;inset:0;background:#000a;z-index:1000;">
+  <canvas id="simCanvas"></canvas>
+  <div id="simControls"
+       style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);">
+    <button onclick="simPlay()">▶</button>
+    <button onclick="simPause()">⏸</button>
+    <button onclick="simReset()">⟲</button>
+    <select id="speedSel">
+      <option value="1">1×</option>
+      <option value="2">2×</option>
+      <option value="4">4×</option>
+    </select>
+    <button onclick="simClose()">✕</button>
+    <input type="range" id="sizeSlider" min="10" max="100" value="40" 
+           style="width:100px;margin-left:10px;" 
+           oninput="updateImageSize(this.value)">
+    <span id="sizeValue" style="color:white;margin-left:5px;">40px</span>
+  </div>
+</div>
+
+<body>
+  <!-- ========== BARRA DE MENÚS ========== -->
+  <nav class="menu-bar">
+    <ul class="menu">
+      <li>Archivo
+        <ul class="submenu">
+          <li onclick="nuevoArchivo()">Nuevo</li>
+          <li onclick="abrirArchivo()">Abrir</li>
+          <li onclick="guardarArchivo()">Guardar</li>
+          <li onclick="guardarComo()">Guardar como</li>
+          <li onclick="imprimirCodigo()">Imprimir</li>
+        </ul>
+      </li>
+      <li>Editar
+        <ul class="submenu">
+          <li onmousedown="event.preventDefault(); copiar()">Copiar</li>
+          <li onmousedown="event.preventDefault(); cortar()">Cortar</li>
+          <li onmousedown="event.preventDefault(); pegar()">Pegar</li>
+          <li onclick="buscar()">Buscar</li>
+          <li onclick="reemplazar()">Reemplazar</li>
+          <li onclick="seleccionar()">Seleccionar</li>
+          <li onclick="seleccionarTodo()">Seleccionar todo</li>
+        </ul>
+      </li>
+      <li>Compilar
+        <ul class="submenu">
+          <li onclick="compilar()">Compilar</li>
+          <li onclick="compilarSimular()">Compilar y simular</li>
+          <li onclick="compilarEjecutar()">Compilar y ejecutar</li>
+        </ul>
+      </li>
+      <li>Coreografías
+        <ul class="submenu">
+          <li onclick="cargarCoreografia(1)">Coreografía 1</li>
+          <li onclick="cargarCoreografia(2)">Coreografía 2</li>
+          <li onclick="cargarCoreografia(3)">Coreografía 3</li>
+        </ul>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- ========== BARRA DE HERRAMIENTAS ========== -->
+  <div class="toolbar">
+    <select id="sel-fuente" title="Fuente" onchange="cambiarFuente(this.value)">
+      <option value="monospace">Monospace</option>
+      <option value="Arial">Arial</option>
+      <option value="Verdana">Verdana</option>
+    </select>
+    <select id="sel-tamano" title="Tamaño" onchange="cambiarTamano(this.value)">
+      <option value="12">12px</option>
+      <option value="14" selected>14px</option>
+      <option value="16">16px</option>
+      <option value="18">18px</option>
+    </select>
+    <select id="sel-lineheight" title="Interlineado" onchange="cambiarInterlineado(this.value)">
+      <option value="1">1</option>
+      <option value="1.5" selected>1.5</option>
+      <option value="2">2</option>
+    </select>
+    <input type="color" id="color-picker" title="Color de texto" onchange="cambiarColor(this.value)" />
+    <button title="Negrita" onclick="document.execCommand('bold')"><b>B</b></button>
+    <button title="Cursiva" onclick="document.execCommand('italic')"><i>I</i></button>
+  </div>
+
+  <!-- OTÓN DE CERRAR SESIÓN -->
+<div style="padding: 10px; text-align: right;">
+  <a href="{% url 'logout' %}" style="color: #f44336; font-weight: bold; text-decoration: none; border: 1px solid #f44336; padding: 5px 10px; border-radius: 5px;">
+    ⎋ Cerrar sesión
+  </a>
+</div>
+
+
+  <!-- ========== CONTENEDOR DEL EDITOR ========== -->
+  <div class="editor-container">
+    <div id="gutter" class="gutter"></div>
+    <div class="editor">
+      <pre id="code" contenteditable="true" spellcheck="false">
+PROGRAM hola
+BEGIN
+  avanzar_mts(10);
+END.
+      </pre>
+    </div>
+  </div>
+  
+  <!-- input para abrir archivos .umgpp -->
+  <input type="file" id="file-opener" accept=".umgpp" style="display:none;">
+
+<script>
+
+  // ══════════════════════════════════════════════
+  //  REFERENCIAS Y ESTADO GLOBAL
+  // ══════════════════════════════════════════════
+  const gutter      = document.getElementById("gutter");
+  const code        = document.getElementById("code");
+  const fileOpener  = document.getElementById("file-opener");
+  let   currentFile = null;
+  let   sim, raf;
+  let   carImage = new Image();
+  let   imageSize = 40; // Tamaño inicial de la imagen
+  
+  // Cargar la imagen (reemplaza 'car.png' con la ruta de tu imagen)
+  carImage.src = "{% static 'car.png' %}";
+  
+  // Estado para búsqueda/reemplazo
+  let searchState = {
+    query: null,
+    matches: [],
+    currentMatch: -1,
+    dialog: null
+  };
+  
+  // ══════════════════════════════════════════════
+  //  LÍNEAS Y RESALTADO
+  // ══════════════════════════════════════════════
+  function actualizarLineas(){
+    let txt = code.innerText.replace(/\r/g,"");
+    if(txt.startsWith("\n")) txt = txt.slice(1);
+    const n = (txt.endsWith("\n")? txt.slice(0,-1) : txt).split("\n").length;
+    gutter.innerHTML = Array.from({length:n},(_,i)=>`<div>${i+1}</div>`).join("");
+  }
+  
+  const reserved = /\b(PROGRAM|BEGIN|END|PUNTO)\b/g;
+  const commands = /\b(avanzar_vlts|avanzar_ctms|avanzar_mts|girar|circulo|cuadrado|rotar|caminar|moonwalk)\b/g;
+  const numbers  = /\b\d+(?:\.\d+)?\b/g;
+  const parens   = /[();.]/g;
+  const esc      = s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+  
+  function getCaretPos(){
+    const sel = window.getSelection(); if(!sel.rangeCount) return 0;
+    const r = sel.getRangeAt(0), pre = r.cloneRange();
+    pre.selectNodeContents(code); pre.setEnd(r.endContainer,r.endOffset);
+    return pre.toString().length;
+  }
+  
+  function setCaretPos(pos){
+    const walker = document.createTreeWalker(code,NodeFilter.SHOW_TEXT);
+    let node, acc=0;
+    while((node=walker.nextNode())){
+      const nxt = acc + node.length;
+      if(pos <= nxt){
+        const range = document.createRange();
+        range.setStart(node, pos-acc);
+        range.collapse(true);
+        const sel = window.getSelection();
+        sel.removeAllRanges(); sel.addRange(range);
+        return;
+      }
+      acc = nxt;
+    }
+  }
+  
+  function resaltar(){
+    const cur = getCaretPos();
+    code.innerHTML = esc(code.innerText)
+      .replace(reserved, '<span class="token reserved">$&</span>')
+      .replace(commands, '<span class="token command">$&</span>')
+      .replace(/\b\d+\b/g, '<span class="token number">$&</span>')  // Números enteros
+      .replace(/[();.]/g, '<span class="token parens">$&</span>');  // Paréntesis y punto
+    setCaretPos(cur);
+}
+  
+  ["input","keydown","paste","cut"].forEach(e=>
+    code.addEventListener(e,()=>{ resaltar(); actualizarLineas(); })
+  );
+  
+  code.addEventListener("scroll", ()=> gutter.scrollTop = code.scrollTop);
+  actualizarLineas(); resaltar();
+  
+  // ══════════════════════════════════════════════
+  //  UTILIDADES
+  // ══════════════════════════════════════════════
+  const obtenerCodigo = ()=>{
+    let t = code.innerText.replace(/\r/g,"");
+    if(t.startsWith("\n")) t = t.slice(1);
+    if(t.endsWith("\n"))   t = t.slice(0,-1);
+    return t;
+  };
+  
+  const descargar = (nombre, contenido)=>{
+    const blob = new Blob([contenido], {type:"text/plain;charset=utf-8"});
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href = url; a.download = nombre;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+  };
+  
+  function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+  
+  function applySyntaxHighlighting(html) {
+    return html
+      .replace(/\b(PROGRAM|BEGIN|END|PUNTO)\b/g, '<span class="token reserved">$&</span>')
+      .replace(/\b(avanzar_vlts|avanzar_ctms|avanzar_mts|girar|circulo|cuadrado)\b/g, '<span class="token command">$&</span>')
+      .replace(/\b\d+(?:\.\d+)?\b/g, '<span class="token number">$&</span>')
+      .replace(/[();.]/g, '<span class="token parens">$&</span>');
+  }
+  
+  // ══════════════════════════════════════════════
+  //  MENÚ ARCHIVO
+  // ══════════════════════════════════════════════
+  function nuevoArchivo(){
+    code.innerText = ""; currentFile = null;
+    actualizarLineas(); resaltar();
+  }
+  
+  function abrirArchivo(){
+    fileOpener.value=""; fileOpener.click();
+  }
+  
+  fileOpener.addEventListener("change", ()=>{
+    const f = fileOpener.files[0];
+    if(!f) return;
+    if(!f.name.endsWith(".umgpp")) return alert("Solo .umgpp");
+    const r = new FileReader();
+    r.onload = e=>{
+      code.innerText = e.target.result;
+      currentFile = f.name;
+      actualizarLineas(); resaltar();
+    };
+    r.readAsText(f,"utf-8");
+  });
+  
+  function guardarArchivo(){
+    if(!currentFile) return guardarComo();
+    descargar(currentFile, obtenerCodigo());
+  }
+  
+  function guardarComo(){
+    let n = prompt("Nombre del archivo:", currentFile||"nuevo.umgpp");
+    if(!n) return;
+    if(!n.endsWith(".umgpp")) n += ".umgpp";
+    currentFile = n;
+    descargar(n, obtenerCodigo());
+  }
+  
+  function imprimirCodigo(){
+    const html = `
+      <html><head><title>Imprimir</title>
+        <style>body{margin:0;font-family:monospace;}pre{padding:1rem;white-space:pre-wrap;}</style>
+      </head><body>
+        <div class="gutter">${gutter.innerHTML}</div>
+        <pre>${code.innerHTML}</pre>
+      </body></html>`;
+    const w = window.open("","_blank");
+    if(!w) return alert("Ventana bloqueada");
+    w.document.open(); w.document.write(html); w.document.close();
+    w.print(); w.close();
+  }
+  
+  // ══════════════════════════════════════════════
+  //  MENÚ EDITAR
+  // ══════════════════════════════════════════════
+  function copiar(){
+    code.focus();
+    if(document.execCommand("copy")) return;
+    const sel=window.getSelection().toString();
+    if(!sel) return alert("Nada seleccionado");
+    navigator.clipboard.writeText(sel).catch(()=>alert("Permiso denegado"));
+  }
+  
+  async function cortar() {
+    code.focus();
+    try {
+      const selection = window.getSelection();
+      const range = selection.getRangeAt(0);
+      const texto = selection.toString();
+      
+      if (!texto) {
+        alert("Nada seleccionado para cortar");
+        return;
+      }
+      
+      try {
+        await navigator.clipboard.writeText(texto);
+      } catch (e) {
+        const textarea = document.createElement('textarea');
+        textarea.value = texto;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      
+      range.deleteContents();
+      actualizarLineas();
+      resaltar();
+    } catch (e) {
+      alert("Error al cortar: " + e.message);
+      console.error("Error en cortar():", e);
+    }
+  }
+  
+  async function pegar(){
+    code.focus();
+    if(document.execCommand("paste")){ actualizarLineas(); resaltar(); return; }
+    try{
+      const txt=await navigator.clipboard.readText();
+      if(!txt) return;
+      document.execCommand("insertText",false,txt);
+      actualizarLineas(); resaltar();
+    }catch{
+      alert("Permiso para pegar denegado");
+    }
+  }
+  
+  function createSearchDialog() {
+    const dialog = document.createElement('div');
+    dialog.className = 'search-dialog';
+    dialog.innerHTML = `
+      <input type="text" id="search-input" class="search-input" placeholder="Buscar...">
+      <button id="search-next" class="search-button">↓</button>
+      <button id="search-prev" class="search-button">↑</button>
+      <button id="search-close" class="search-button">×</button>
+      <div id="search-matches" class="search-matches">0/0</div>
+      <div style="margin-top: 10px;">
+        <input type="checkbox" id="search-case"> Distinguir mayúsculas
+      </div>
+    `;
+    
+    document.body.appendChild(dialog);
+    searchState.dialog = dialog;
+
+    // Event listeners
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      performSearch(e.target.value);
+    });
+    
+    document.getElementById('search-next').addEventListener('click', () => {
+      navigateMatch(1);
+    });
+    
+    document.getElementById('search-prev').addEventListener('click', () => {
+      navigateMatch(-1);
+    });
+    
+    document.getElementById('search-close').addEventListener('click', () => {
+      clearSearch();
+      dialog.style.display = 'none';
+    });
+    
+    document.getElementById('search-case').addEventListener('change', (e) => {
+      if (searchState.query) {
+        performSearch(searchState.query);
+      }
+    });
+  }
+  
+  function performSearch(query) {
+    if (!query) {
+      clearSearch();
+      return;
+    }
+    
+    clearHighlights();
+    searchState.query = query;
+    searchState.matches = [];
+    searchState.currentMatch = -1;
+    
+    const caseSensitive = document.getElementById('search-case')?.checked || false;
+    const flags = caseSensitive ? 'g' : 'gi';
+    const regex = new RegExp(escapeRegExp(query), flags);
+    const text = code.innerText;
+    let match;
+    
+    while ((match = regex.exec(text)) !== null) {
+      searchState.matches.push({
+        start: match.index,
+        end: match.index + match[0].length
+      });
+    }
+    
+    highlightMatches();
+    updateMatchCounter();
+    
+    if (searchState.matches.length > 0) {
+      searchState.currentMatch = 0;
+      navigateToMatch(0);
+    }
+  }
+  
+  function highlightMatches() {
+    if (!searchState.query) return;
+    
+    const text = code.innerText;
+    let html = esc(text);
+    const flags = document.getElementById('search-case')?.checked ? 'g' : 'gi';
+    const regex = new RegExp(escapeRegExp(searchState.query), flags);
+    
+    html = html.replace(regex, match => 
+      `<span class="highlight">${match}</span>`
+    );
+    
+    html = applySyntaxHighlighting(html);
+    const cursorPos = getCaretPos();
+    code.innerHTML = html;
+    setCaretPos(cursorPos);
+  }
+  
+  function navigateMatch(direction) {
+    if (searchState.matches.length === 0) return;
+    
+    let newIndex = searchState.currentMatch + direction;
+    
+    if (newIndex < 0) {
+      newIndex = searchState.matches.length - 1;
+    } else if (newIndex >= searchState.matches.length) {
+      newIndex = 0;
+    }
+    
+    searchState.currentMatch = newIndex;
+    navigateToMatch(newIndex);
+    updateMatchCounter();
+  }
+  
+  function navigateToMatch(index) {
+    if (index < 0 || index >= searchState.matches.length) return;
+    
+    const match = searchState.matches[index];
+    const range = document.createRange();
+    const node = code.firstChild;
+    
+    range.setStart(node, match.start);
+    range.setEnd(node, match.end);
+    
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    
+    code.focus();
+    const rect = range.getBoundingClientRect();
+    code.scrollTop += rect.top - 100;
+    
+    updateCurrentHighlight();
+  }
+  
+  function updateCurrentHighlight() {
+    const currentHighlights = code.querySelectorAll('.current-highlight');
+    currentHighlights.forEach(el => {
+      el.classList.remove('current-highlight');
+      el.classList.add('highlight');
+    });
+    
+    if (searchState.currentMatch >= 0) {
+      const highlights = code.querySelectorAll('.highlight');
+      if (highlights.length > searchState.currentMatch) {
+        highlights[searchState.currentMatch].classList.remove('highlight');
+        highlights[searchState.currentMatch].classList.add('current-highlight');
+      }
+    }
+  }
+  
+  function updateMatchCounter() {
+    const counter = document.getElementById('search-matches');
+    if (searchState.matches.length > 0) {
+      counter.textContent = `${searchState.currentMatch + 1}/${searchState.matches.length}`;
+    } else {
+      counter.textContent = searchState.query ? "0/0" : "";
+    }
+  }
+  
+  function clearSearch() {
+    clearHighlights();
+    searchState.query = null;
+    searchState.matches = [];
+    searchState.currentMatch = -1;
+    updateMatchCounter();
+  }
+  
+  function clearHighlights() {
+    resaltar();
+  }
+  
+  function buscar() {
+    if (!searchState.dialog) {
+      createSearchDialog();
+    } else {
+      searchState.dialog.style.display = 'block';
+    }
+    document.getElementById('search-input')?.focus();
+  }
+  
+  function reemplazar() {
+    if (!searchState.dialog) {
+      createSearchDialog();
+    }
+    
+    const dialog = searchState.dialog;
+    dialog.innerHTML = `
+      <div style="display: flex; margin-bottom: 5px;">
+        <input type="text" id="search-input" class="search-input" placeholder="Buscar..." style="flex: 1;">
+      </div>
+      <div style="display: flex;">
+        <input type="text" id="replace-input" class="search-input" placeholder="Reemplazar con..." style="flex: 1;">
+      </div>
+      <div style="margin-top: 10px; display: flex; justify-content: space-between;">
+        <div>
+          <button id="replace-next" class="search-button">Siguiente</button>
+          <button id="replace-prev" class="search-button">Anterior</button>
+        </div>
+        <div>
+          <button id="replace-one" class="search-button">Reemplazar</button>
+          <button id="replace-all" class="search-button">Reemplazar todo</button>
+        </div>
+        <button id="replace-close" class="search-button">×</button>
+      </div>
+      <div id="search-matches" class="search-matches">0/0</div>
+      <div style="margin-top: 10px;">
+        <input type="checkbox" id="search-case"> Distinguir mayúsculas
+      </div>
+    `;
+    
+    dialog.style.display = 'block';
+    
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      performSearch(e.target.value);
+    });
+    
+    document.getElementById('replace-next').addEventListener('click', () => {
+      navigateMatch(1);
+    });
+    
+    document.getElementById('replace-prev').addEventListener('click', () => {
+      navigateMatch(-1);
+    });
+    
+    document.getElementById('replace-one').addEventListener('click', () => {
+      replaceCurrent();
+    });
+    
+    document.getElementById('replace-all').addEventListener('click', () => {
+      replaceAll();
+    });
+    
+    document.getElementById('replace-close').addEventListener('click', () => {
+      clearSearch();
+      dialog.style.display = 'none';
+    });
+    
+    document.getElementById('search-case').addEventListener('change', (e) => {
+      if (searchState.query) {
+        performSearch(searchState.query);
+      }
+    });
+    
+    document.getElementById('search-input').focus();
+  }
+  
+  function replaceCurrent() {
+    if (searchState.currentMatch < 0 || !searchState.query) return;
+    
+    const replaceText = document.getElementById('replace-input').value || '';
+    const match = searchState.matches[searchState.currentMatch];
+    const text = code.innerText;
+    
+    const newText = text.substring(0, match.start) + replaceText + text.substring(match.end);
+    code.innerText = newText;
+    
+    actualizarLineas();
+    resaltar();
+    performSearch(searchState.query);
+    
+    if (searchState.matches.length > 0) {
+      searchState.currentMatch = Math.min(searchState.currentMatch, searchState.matches.length - 1);
+      navigateToMatch(searchState.currentMatch);
+    }
+  }
+  
+  function replaceAll() {
+    if (!searchState.query || searchState.matches.length === 0) return;
+    
+    const replaceText = document.getElementById('replace-input').value || '';
+    const caseSensitive = document.getElementById('search-case').checked;
+    const flags = caseSensitive ? 'g' : 'gi';
+    const regex = new RegExp(escapeRegExp(searchState.query), flags);
+    
+    let newText = code.innerText.replace(regex, replaceText);
+    code.innerText = newText;
+    
+    actualizarLineas();
+    resaltar();
+    clearSearch();
+  }
+  
+  function seleccionar() {
+    const lineas = code.innerText.split('\n');
+    const totalLineas = lineas.length;
+    
+    const inicio = parseInt(prompt(`Seleccionar desde línea (1-${totalLineas}):`, "1")) || 1;
+    const fin = parseInt(prompt(`Seleccionar hasta línea (${inicio}-${totalLineas}):`, String(inicio))) || inicio;
+    
+    if (isNaN(inicio) || isNaN(fin) || inicio < 1 || fin > totalLineas || inicio > fin) {
+      alert("Rango de líneas inválido");
+      return;
+    }
+    
+    let startPos = 0;
+    for (let i = 0; i < inicio - 1; i++) {
+      startPos += lineas[i].length + 1;
+    }
+    
+    let endPos = startPos;
+    for (let i = inicio - 1; i < fin; i++) {
+      endPos += lineas[i].length;
+      if (i < fin - 1) endPos += 1;
+    }
+    
+    const range = document.createRange();
+    const nodoTexto = code.firstChild;
+    
+    range.setStart(nodoTexto, startPos);
+    range.setEnd(nodoTexto, endPos);
+    
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    
+    code.focus();
+    const rect = range.getBoundingClientRect();
+    code.scrollTop += rect.top - 100;
+  }
+  
+  function seleccionarTodo() {
+    const range = document.createRange();
+    range.selectNodeContents(code);
+    
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    
+    code.focus();
+  }
+  
+  // ══════════════════════════════════════════════
+  //  BARRA DE HERRAMIENTAS
+  // ══════════════════════════════════════════════
+  function cambiarFuente(fuente){
+    code.style.fontFamily = fuente;
+  }
+  
+  function cambiarTamano(tamano){
+    code.style.fontSize = tamano + "px";
+    gutter.style.fontSize = tamano + "px";
+    // Ajustar el interlineado para que coincida con el nuevo tamaño
+    const lineHeight = parseFloat(document.getElementById("sel-lineheight").value);
+    code.style.lineHeight = lineHeight + "em";
+    gutter.querySelectorAll("div").forEach(el=>{
+      el.style.lineHeight = lineHeight + "em";
+    });
+  }
+  
+  function cambiarInterlineado(valor){
+    code.style.lineHeight = valor + "em";
+    gutter.querySelectorAll("div").forEach(el=>{
+      el.style.lineHeight = valor + "em";
+    });
+  }
+  
+  function cambiarColor(color){
+    code.style.color = color;
+  }
+  
+  // ══════════════════════════════════════════════
+  //  COMPILAR & SIMULAR
+  // ══════════════════════════════════════════════
+  async function compilar(){
+    const r = await fetch("{% url 'api_compile' %}", {
+      method:"POST",
+      headers:{
+        "X-CSRFToken":"{{ csrf_token }}",
+        "Content-Type":"application/x-www-form-urlencoded"
+      },
+      body:new URLSearchParams({code:obtenerCodigo()})
+    });
+    const d = await r.json();
+    alert(d.status==="ok"?"✓ Sin errores":"⚠️ "+d.msg);
+  }
+  
+  async function compilarSimular(){
+    const r = await fetch("{% url 'api_compile' %}", {
+      method:"POST",
+      headers:{
+        "X-CSRFToken":"{{ csrf_token }}",
+        "Content-Type":"application/x-www-form-urlencoded"
+      },
+      body:new URLSearchParams({code:obtenerCodigo()})
+    });
+    const d = await r.json();
+    if(d.status!=="ok") return alert("⚠️ "+d.msg);
+    lanzarSimulador(d.commands);
+  }
+  
+  async function compilarEjecutar(){
+  const codeText = obtenerCodigo();
+
+  // 1) Pide al backend compilar + ejecutar
+  const rsp = await fetch("{% url 'api_execute' %}", {
+      method: "POST",
+      headers: {
+          "X-CSRFToken": "{{ csrf_token }}",
+          "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: new URLSearchParams({ code: codeText })
+  });
+
+  const data = await rsp.json();
+  if (data.status === "ok") {
+      alert("✓ Código ejecutado en el Rover");
+  } else {
+      alert("⚠️  " + data.msg);
+  }
+}
+
+  
+  // ══════════════════════════════════════════════
+  //  COREOGRAFÍAS
+  // ══════════════════════════════════════════════
+function cargarCoreografia(num){
+  const coreografias = {
+    1: `PROGRAM coreo1\nBEGIN\n  avanzar_vlts(10);\n  girar(1);\n  avanzar_vlts(10);\nEND.`,
+    2: `PROGRAM coreo2\nBEGIN\n  circulo(20);\n  girar(1);\n  circulo(20);\nEND.`,
+    3: `PROGRAM coreo3\nBEGIN\n  cuadrado(10);\n  girar(1);\n  cuadrado(10);\nEND.`,
+    4: `PROGRAM coreo4\nBEGIN\n  avanzar_mts(5);\n  circulo(2);\n  girar(1);\n  moonwalk(3);\nEND.`
+  };
+
+  const codigo = coreografias[num];
+  if (codigo) {
+    code.innerText = codigo;
+    actualizarLineas();
+    resaltar();
+    compilarEjecutar();  // ← Ejecuta al instante después de cargar
+  }
+}
+
+  
+  // ══════════════════════════════════════════════
+  //  SIMULADOR 2D CON IMAGEN PNG
+  // ══════════════════════════════════════════════
+  function lanzarSimulador(cmds) {
+  const modal  = document.getElementById("simModal");
+  const canvas = document.getElementById("simCanvas");
+
+  // Ajusta canvas al tamaño de la ventana
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  // Muestra el modal
+  modal.style.display = "block";
+
+  // Entra en pantalla completa
+  if (modal.requestFullscreen) {
+    modal.requestFullscreen();
+  } else if (modal.webkitRequestFullscreen) {
+    modal.webkitRequestFullscreen();
+  } else if (modal.msRequestFullscreen) {
+    modal.msRequestFullscreen();
+  }
+
+  // Inicializa simulación
+  sim = {
+    cmds,
+    i: 0,
+    t: 0,
+    speed: 1,
+    x: 50,
+    y: 200,
+    ang: 0,
+    trail: [[50, 200]],
+    circleState: null,
+    playing: true
+  };
+  step();
+}
+
+  
+  function physics(dt){
+    if(sim.i >= sim.cmds.length) return;
+    const [cmd,val] = sim.cmds[sim.i];
+  
+    if(cmd.startsWith("avanzar")){
+      const v = val * 5;
+      sim.x += Math.cos(sim.ang) * v * dt;
+      sim.y += Math.sin(sim.ang) * v * dt;
+    }
+    else if(cmd==="girar"){
+      sim.ang += val * (Math.PI/2) * dt;
+    }
+
+    else if(cmd==="rotar"){
+    // rotar n vueltas completas: val vueltas → 2π·val radianes
+    sim.ang += val * 2 * Math.PI * dt;
+  }
+  else if(cmd==="caminar"){
+    // un paseíto normal: más lento que avanzar
+    const v = val * 2; 
+    sim.x += Math.cos(sim.ang) * v * dt;
+    sim.y += Math.sin(sim.ang) * v * dt;
+  }
+  else if(cmd==="moonwalk"){
+    // moonwalk: desliza hacia atrás + adelante
+    const v = val * 2;
+    sim.x -= Math.cos(sim.ang) * v * dt;
+    sim.y -= Math.sin(sim.ang) * v * dt;
+  }
+
+    else if(cmd==="circulo"){
+      if(sim.t===0){
+        const rPx = val * 5;
+        const cx = sim.x + rPx * Math.cos(sim.ang + Math.PI/2);
+        const cy = sim.y + rPx * Math.sin(sim.ang + Math.PI/2);
+        sim.circleState = {cx, cy, r: rPx, startAngle: sim.ang - Math.PI/2};
+      }
+      const cs = sim.circleState;
+      const angle = cs.startAngle + 2*Math.PI*sim.t;
+      sim.x = cs.cx + cs.r * Math.cos(angle);
+      sim.y = cs.cy + cs.r * Math.sin(angle);
+      sim.ang = angle + Math.PI/2;
+    }
+    else if(cmd==="cuadrado"){
+      // Implementación básica para cuadrados
+      if(sim.t < 0.25) sim.x += 5 * val * dt;
+      else if(sim.t < 0.5) sim.y += 5 * val * dt;
+      else if(sim.t < 0.75) sim.x -= 5 * val * dt;
+      else sim.y -= 5 * val * dt;
+      
+      if(sim.t % 0.25 < dt) sim.ang += Math.PI/2;
+    }
+  
+    sim.t += dt;
+    if(sim.t >= 1){
+      sim.trail.push([sim.x, sim.y]);
+      sim.i++; sim.t = 0; sim.circleState = null;
+    }
+  }
+  
+  function draw(){
+    const ctx = document.getElementById("simCanvas").getContext("2d");
+    ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
+  
+    // Dibujar trayectoria
+    ctx.strokeStyle="#888";
+    ctx.beginPath();
+    ctx.moveTo(sim.trail[0][0], sim.trail[0][1]);
+    sim.trail.forEach(p=>ctx.lineTo(p[0], p[1]));
+    ctx.stroke();
+  
+    // Dibujar la imagen PNG
+    ctx.save();
+    ctx.translate(sim.x, sim.y);
+    ctx.rotate(sim.ang);
+    const halfSize = imageSize / 2;
+    ctx.drawImage(carImage, -halfSize, -halfSize, imageSize, imageSize);
+    ctx.restore();
+  }
+  
+  function step(){
+    if(sim.playing) physics(1/60 * sim.speed);
+    draw();
+    raf = requestAnimationFrame(step);
+  }
+  
+  // Función para actualizar el tamaño de la imagen
+  function updateImageSize(size) {
+    imageSize = parseInt(size);
+    document.getElementById("sizeValue").textContent = size + "px";
+  }
+  
+  // controles del modal
+  const simPlay  = ()=> sim.playing = true;
+  const simPause = ()=> sim.playing = false;
+  const simReset = ()=>{ cancelAnimationFrame(raf); lanzarSimulador(sim.cmds); };
+  const simClose = ()=>{ cancelAnimationFrame(raf); document.getElementById("simModal").style.display="none"; };
+  document.getElementById("speedSel").onchange = e=> sim.speed = +e.target.value;
+  
+  // Inicialización
+  window.onload = function() {
+    actualizarLineas();
+    resaltar();
+  };
+</script>
+</body>
+</html>
