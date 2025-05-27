@@ -923,18 +923,20 @@ function detenerAudioCoreografia() {
 }
 
 function pararCoreografia () {
-  /* 1) Detener la animación */
-  if (typeof sim !== 'undefined') {
-    sim.playing = false;          // pausa la física
+
+  /* 1) Detener la animación (física + render) */
+  if (typeof sim !== 'undefined' && sim) {
+    sim.playing = false;        // pausa la física
   }
-  if (raf) cancelAnimationFrame(raf); // detiene el bucle de dibujo
+  if (raf) cancelAnimationFrame(raf);
 
-  /* 2) Detener la música */
+  /* 2) Liberar el objeto para el próximo uso ──► AQUÍ */
+  if (sim) sim = null;
+
+  /* 3) Detener la música (independiente del simulador) */
   detenerAudioCoreografia();
-
-  /* 3) Reiniciar estado para un próximo uso */
-  if (sim) sim = null;             // ← AQUÍ
 }
+
 
 
   
