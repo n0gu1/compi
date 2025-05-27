@@ -21,41 +21,71 @@ from compiler.utils import flatten_ast
 from .rover import execute
 
 # ─────────────────────  HELPER: crear_usuario  ──────────────────────
-def crear_usuario(nombre, nickname, password, image_file, correo, telefono) -> str:
+# vista.py
+# ---------------------------------------------------------------------------
+#  Crear usuario llamando al SP y CONFIRMANDO la transacción
+# ---------------------------------------------------------------------------
+def crear_usuario(nombre: str,
+                  nickname: str,
+                  password: str,
+                  image_file,
+                  correo: str,
+                  telefono: str) -> str:
+    """Invoca el SP insertar_usuario y devuelve el mensaje que este genere."""
+
+    # ─── 1) hashear password ────────────────────────────────────────────────
     pwd_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
+    # ─── 2) imagen → base-64 (opcional) ─────────────────────────────────────
     img_b64 = ""
     if image_file:
         img_b64 = base64.b64encode(image_file.read()).decode()
-        image_file.seek(0)
+        image_file.seek(0)         # por si la vuelves a leer más adelante
 
     try:
+        # ─── 3) llamar al SP ────────────────────────────────────────────────
         with connections["mysql_remoto"].cursor() as cur:
-            cur.execute("SET @resultado = ''")
+            cur.execute("SET @resultado := ''")
             cur.execute(
                 """
                 CALL insertar_usuario(
-                    %s, %s, %s, %s, %s, %s, @resultado
+                    %s,   -- nombre
+                    %s,   -- nickname
+                    %s,   -- password hash
+                    %s,   -- avatar base64
+                    %s,   -- correo
+                    %s,   -- teléfono
+                    @resultado
                 )
                 """,
                 [nombre, nickname, pwd_hash, img_b64, correo, telefono],
             )
-            cur.execute("SELECT @resultado")
-            row = cur.fetchone()
-            if row and row[0]:
-                return row[0]
 
+            # ⚠️  DIFERENCIA CLAVE: confirmar la transacción
+            cur.connection.commit()              # <── nuevo
+
+            cur.execute("SELECT @resultado")
+            sp_msg = cur.fetchone()[0] or ""
+
+        # si el SP devolvió algo, úsalo como respuesta
+        if sp_msg:
+            return sp_msg
+
+        # ─── 4) verificación extra (opcional) ──────────────────────────────
         with connections["mysql_remoto"].cursor() as cur2:
             cur2.execute(
-                "SELECT COUNT(*) FROM tb_usuarios WHERE nickname = %s",
+                "SELECT 1 FROM tb_usuarios WHERE nickname = %s LIMIT 1",
                 [nickname],
             )
-            count = cur2.fetchone()[0]
-            if count > 0:
+            if cur2.fetchone():
                 return "Ha sido registrado exitosamente"
-            return "(SP no retornó mensaje y no se encontró registro)"
+
+        # si no se insertó nada y el SP no dijo nada
+        return "(SP no retornó mensaje y no se encontró registro)"
+
     except Exception as exc:
         return f"Error al invocar SP: {exc}"
+
 
 # ─────────────── Función auxiliar para código de barras ────────────────
 def generar_codigo_barra(valor: str) -> str:
