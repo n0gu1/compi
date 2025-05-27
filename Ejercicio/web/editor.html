@@ -223,6 +223,7 @@
           <li onclick="cargarCoreografia(1)">Coreografía 1</li>
           <li onclick="cargarCoreografia(2)">Coreografía 2</li>
           <li onclick="cargarCoreografia(3)">Coreografía 3</li>
+          <li onclick="pararCoreografia()">Parar coreografía</li>
         </ul>
       </li>
     </ul>
@@ -919,6 +920,20 @@ function detenerAudioCoreografia() {
   const iframe = document.getElementById('player');
   const widget = SC.Widget(iframe);
   widget.pause();  // Pausa la música
+}
+
+function pararCoreografia () {
+  /* 1) Detener la animación */
+  if (typeof sim !== 'undefined') {
+    sim.playing = false;          // pausa la física
+  }
+  if (raf) cancelAnimationFrame(raf); // detiene el bucle de dibujo
+
+  /* 2) Detener la música */
+  detenerAudioCoreografia();
+
+  /* 3) Reiniciar estado para un próximo uso */
+  if (sim) sim = null;             // ← AQUÍ
 }
 
 
