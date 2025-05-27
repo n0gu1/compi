@@ -903,6 +903,18 @@ END.
   }
 }
 
+/*  Reproduce la canción asociada a la coreografía 1 */
+function reproducirAudioCoreografia() {
+  const iframe = document.getElementById('player');
+  const widget = SC.Widget(iframe);
+
+  /* Espera a que el widget esté listo y luego reproduce */
+  widget.bind(SC.Widget.Events.READY, () => {
+    widget.seekTo(0);   // por si ya estaba avanzada
+    widget.play();
+  });
+}
+
 function detenerAudioCoreografia() {
   const iframe = document.getElementById('player');
   const widget = SC.Widget(iframe);
