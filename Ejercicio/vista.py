@@ -24,7 +24,7 @@ from .twilio_messenger import TwilioMessenger
 
 twilio = TwilioMessenger()   # singleton sencillo
 
-
+print(cloudinary.config().cloud_name)
 # ─────────────────────  HELPER: crear_usuario  ──────────────────────
 # vista.py
 # ---------------------------------------------------------------------------
