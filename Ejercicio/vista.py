@@ -320,7 +320,7 @@ def registro_pdf(request):
     pdf_url = upload_res["secure_url"]  # termina en .pdf
     print("📄 Cloudinary URL:", pdf_url)
 
-    vars = {"1": nickname, "2": file_base}
+    vars = {"1": nickname, "2": pdf_url}
     try:
         twilio.send_whatsapp_template(
             to_e164=f"+502{telefono}",
