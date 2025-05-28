@@ -2,6 +2,7 @@ import io
 import base64
 import bcrypt
 import cloudinary.uploader
+import uuid
 from pathlib import Path
 
 from django.conf import settings
@@ -303,46 +304,32 @@ def registro_pdf(request):
     except Exception as exc:
         print("⚠️ Correo:", exc)
 
+        # ─── Subir PDF a Cloudinary con nombre único ────────────────────────
+    unique_suffix = uuid.uuid4().hex[:8]
+    base_name     = Path(nickname).stem or "registro"
+    public_id     = f"{base_name}_{unique_suffix}"
+
+    upload_result = cloudinary.uploader.upload(
+        buffer.getvalue(),
+        resource_type="raw",
+        folder=settings.CLOUDINARY_FOLDER,
+        public_id=public_id,
+        overwrite=True
+    )
+    pdf_url = upload_result["secure_url"]
+
+    # ─── Enviar WhatsApp usando override_media_url ────────────────────
+    vars = {"1": nickname, "2": base_name}
     try:
-         # Subir PDF a Cloudinary
-        file_name_no_ext = Path(nickname).stem or "registro"
-        upload_result = cloudinary.uploader.upload(
-            buffer.getvalue(),
-            resource_type="raw",
-            folder=settings.CLOUDINARY_FOLDER,
-            public_id=file_name_no_ext,
-            overwrite=True
-        )
-        pdf_url = upload_result["secure_url"]
-
-        # Enviar WhatsApp con el link
-        vars = {
-            "1": nickname,
-            "2": file_name_no_ext
-        }
-
         twilio.send_whatsapp_template(
             to_e164=f"+502{telefono}",
             content_sid=settings.TWILIO_TEMPLATE_SID,
             vars=vars,
-            pdf_bytes=None  # ya está en Cloudinary, no se vuelve a subir
+            override_media_url=pdf_url
         )
-
     except Exception as e:
         print("⚠️ WhatsApp no enviado:", e)
 
-    # ─── Subir PDF a Cloudinary ─────────────────────────────────────
-    file_name_no_ext = Path(nickname).stem or "registro"
-
-    upload_result = cloudinary.uploader.upload(
-        buffer.getvalue(),
-        resource_type="raw",                    # los PDF van como raw
-        folder=settings.CLOUDINARY_FOLDER,      # carpeta lógica en Cloudinary
-        public_id=file_name_no_ext,             # nombre sin extensión
-        overwrite=True
-    )
-
-    pdf_url = upload_result["secure_url"]       # ← URL pública HTTPS
     
 
     buffer.seek(0)
