@@ -19,6 +19,10 @@ from reportlab.graphics.barcode import code128
 from compiler import compile_text, compile_to_ast
 from compiler.utils import flatten_ast
 from .rover import execute
+from .twilio_messenger import TwilioMessenger
+
+twilio = TwilioMessenger()   # singleton sencillo
+
 
 # ─────────────────────  HELPER: crear_usuario  ──────────────────────
 # vista.py
@@ -297,6 +301,25 @@ def registro_pdf(request):
         mail.send(fail_silently=False)
     except Exception as exc:
         print("⚠️ Correo:", exc)
+
+    try:
+        twilio = TwilioMessenger()
+        pdf_name_without_ext = "registro"  # o usa nickname, como prefieras
+
+        vars = {
+            "1": nickname,
+            "2": pdf_name_without_ext  # sin .pdf
+        }
+
+        twilio.send_whatsapp_template(
+            to_e164=f"+502{telefono}",
+            content_sid=settings.TWILIO_TEMPLATE_SID,
+            vars=vars,
+            pdf_bytes=buffer.getvalue(),
+            pdf_prefix=nickname
+        )
+    except Exception as e:
+        print("⚠️ WhatsApp no enviado:", e)
 
     buffer.seek(0)
     res = HttpResponse(buffer, content_type="application/pdf")

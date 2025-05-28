@@ -122,3 +122,17 @@ DEFAULT_FROM_EMAIL  = EMAIL_HOST_USER
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 SESSION_COOKIE_HTTPONLY = True       # - recomendado
 SESSION_COOKIE_SECURE   = not DEBUG  #  idem
+
+# -----------------------------------------------------------------------------
+#  TWILIO
+# -----------------------------------------------------------------------------
+TWILIO_ACCOUNT_SID   = os.getenv("TWILIO_ACCOUNT_SID", "")
+TWILIO_AUTH_TOKEN    = os.getenv("TWILIO_AUTH_TOKEN",  "")
+TWILIO_FROM_SMS      = os.getenv("TWILIO_FROM_SMS",    "")
+TWILIO_FROM_WHATSAPP = os.getenv("TWILIO_FROM_WHATSAPP", "whatsapp:+14155238886")
+TWILIO_TEMPLATE_SID  = os.getenv("TWILIO_TEMPLATE_SID", "")
+
+# -----------------------------------------------------------------------------
+#  URL pública del sitio (Render te la da en Settings ▸ URL)
+# -----------------------------------------------------------------------------
+APP_BASE_URL = os.getenv("APP_BASE_URL", "https://compiladores2025.somee.com")
