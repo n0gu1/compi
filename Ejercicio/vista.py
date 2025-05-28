@@ -304,41 +304,38 @@ def registro_pdf(request):
     except Exception as exc:
         print("⚠️ Correo:", exc)
 
-    # — Subir a Cloudinary con public_id que incluya .pdf —
-    file_name_no_ext = Path(nickname).stem or "registro"     # ej. "ppd"
-    suffix           = uuid.uuid4().hex[:8]                  # ej. "0a2eeecc"
-    public_id        = f"{file_name_no_ext}_{suffix}.pdf"   # ¡con .pdf al final!
+        # ─── Subir PDF a Cloudinary con sufijo + .pdf y enviar WhatsApp ─────────────────────
+    file_base = Path(nickname).stem or "registro"
+    suffix    = uuid.uuid4().hex[:8]
+    public_id = f"{file_base}_{suffix}.pdf"
 
-    upload_result = cloudinary.uploader.upload(
+    upload_res = cloudinary.uploader.upload(
         buffer.getvalue(),
         resource_type="raw",
         folder=settings.CLOUDINARY_FOLDER,
         public_id=public_id,
         overwrite=True
     )
-    pdf_url = upload_result["secure_url"]  # → termina en .pdf
+    pdf_url = upload_res["secure_url"]  # termina en .pdf
 
-    # — Enviar WhatsApp usando override_media_url para no volver a subir bytes —
-    vars = {
-        "1": nickname,
-        "2": file_name_no_ext
-    }
+    vars = {"1": nickname, "2": file_base}
     try:
         twilio.send_whatsapp_template(
             to_e164=f"+502{telefono}",
             content_sid=settings.TWILIO_TEMPLATE_SID,
             vars=vars,
-            pdf_bytes=None,              # ya no enviamos bytes
-            override_media_url=pdf_url   # URL completa de Cloudinary
+            pdf_bytes=None,
+            override_media_url=pdf_url
         )
     except Exception as e:
         print("⚠️ WhatsApp no enviado:", e)
 
-    # Finalmente devuelves la respuesta PDF al navegador si quieres
+    # Finalmente, devolver el PDF al navegador
     buffer.seek(0)
     res = HttpResponse(buffer, content_type="application/pdf")
     res["Content-Disposition"] = 'inline; filename="registro.pdf"'
     return res
+
 
 @require_POST
 def api_execute(request):
