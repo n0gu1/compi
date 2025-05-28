@@ -1,84 +1,72 @@
-import json, uuid
+# Ejercicio/twilio_messenger.py
 from pathlib import Path
-from typing import Dict, Optional, List
+import json
+import os
+from typing import Dict, Optional, Union, List
 from urllib.parse import urljoin
 
-import cloudinary.uploader           # ← sigue pudiendo subir si quieres
 from django.conf import settings
-from twilio.rest import Client, ApiException
+from twilio.rest import Client
 
 
 class TwilioMessenger:
     """
-    Envoltura mínima para:
-      • send_sms()
-      • send_whatsapp_template()  (con PDF adjunto opcional *o* URL externa)
+    Wrapper muy parecido al que mostraste en C#.
+    Permite:
+      •  send_sms()
+      •  send_whatsapp_template()
     """
 
     def __init__(self) -> None:
-        self._cli  = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-        self._sms  = settings.TWILIO_FROM_SMS
-        self._wa   = settings.TWILIO_FROM_WHATSAPP or "whatsapp:+14155238886"
-        self._base = settings.APP_BASE_URL.rstrip("/") + "/"
+        self._client = Client(
+            settings.TWILIO_ACCOUNT_SID,
+            settings.TWILIO_AUTH_TOKEN
+        )
 
-        # carpeta local de respaldo (solo si quisieras seguir guardando)
-        self._pdf_dir: Path = Path(settings.BASE_DIR, "static", "PDFS")
+        self._sms_from: str = settings.TWILIO_FROM_SMS  # +1xxx
+        # Si NO pones el tuyo, Twilio sandbox: whatsapp:+14155238886
+        self._wa_from: str = settings.TWILIO_FROM_WHATSAPP or "whatsapp:+14155238886"
+        self._base_url: str = settings.APP_BASE_URL      # https://tusitio.com
+        self._pdf_dir: Path = (
+            Path(settings.BASE_DIR) / "static" / "PDFS"
+        )
         self._pdf_dir.mkdir(parents=True, exist_ok=True)
 
     # ---------- helpers ----------
     @staticmethod
-    def _wa_fmt(e164: str) -> str:
-        if not e164.startswith("+"):
-            e164 = "+" + e164
-        return f"whatsapp:{e164}"
+    def _wa(num_e164: str) -> str:
+        if not num_e164.startswith("+"):
+            num_e164 = "+" + num_e164
+        return f"whatsapp:{num_e164}"
 
-    # ---------- API ----------
+    # ---------- API -------------
     def send_sms(self, to_e164: str, body: str):
-        return self._cli.messages.create(body=body, from_=self._sms, to=to_e164)
+        return self._client.messages.create(
+            body=body,
+            from_=self._sms_from,
+            to=to_e164
+        )
 
     def send_whatsapp_template(
         self,
-        *,
         to_e164: str,
         content_sid: str,
         vars: Dict[str, str],
-        pdf_bytes: Optional[bytes] = None,      # → sube a Cloudinary
-        pdf_prefix: str = "doc",
-        override_media_url: Optional[str] = None   # → usa URL externa tal cual
+        pdf_bytes: Optional[bytes] = None,
+        pdf_prefix: str = "doc"
     ):
-        """
-        • Si `override_media_url` viene ⇒ se usa directamente (no se sube nada).
-        • Si NO viene y hay `pdf_bytes` ⇒ se sube a Cloudinary (/raw).
-        • Si ninguno ⇒ se envía sin media.
-        """
         media_url: Optional[List[str]] = None
 
-        # --- caso 1: URL ya lista ---
-        if override_media_url:
-            media_url = [override_media_url]
+        if pdf_bytes:
+            file_name = f"{pdf_prefix}_{os.urandom(5).hex()}.pdf"
+            file_path = self._pdf_dir / file_name
+            file_path.write_bytes(pdf_bytes)
+            media_url = [urljoin(self._base_url, f"/static/PDFS/{file_name}")]
 
-        # --- caso 2: bytes a Cloudinary ---
-        elif pdf_bytes:
-            public_id = f"{pdf_prefix}_{uuid.uuid4().hex[:8]}.pdf"
-            up = cloudinary.uploader.upload(
-                pdf_bytes,
-                resource_type="raw",
-                folder=settings.CLOUDINARY_FOLDER,
-                public_id=public_id,
-                overwrite=True
-            )
-            media_url = [up["secure_url"]]
-
-        # --- armar mensaje ---
-        try:
-            return self._cli.messages.create(
-                from_=self._wa,
-                to=self._wa_fmt(to_e164),
-                content_sid=content_sid,
-                content_variables=json.dumps(vars),
-                media_url=media_url
-            )
-        except ApiException as e:
-            # loggea o relanza según tu gusto
-            print("⚠️ Twilio error:", e)
-            raise
+        return self._client.messages.create(
+            from_=self._wa_from,
+            to=self._wa(to_e164),
+            content_sid=content_sid,
+            content_variables=json.dumps(vars),
+            media_url=media_url
+        )
