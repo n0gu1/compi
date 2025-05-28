@@ -1,6 +1,7 @@
 import io
 import base64
 import bcrypt
+import cloudinary.uploader
 from pathlib import Path
 
 from django.conf import settings
@@ -303,23 +304,46 @@ def registro_pdf(request):
         print("⚠️ Correo:", exc)
 
     try:
-        twilio = TwilioMessenger()
-        pdf_name_without_ext = "registro"  # o usa nickname, como prefieras
+         # Subir PDF a Cloudinary
+        file_name_no_ext = Path(nickname).stem or "registro"
+        upload_result = cloudinary.uploader.upload(
+            buffer.getvalue(),
+            resource_type="raw",
+            folder=settings.CLOUDINARY_FOLDER,
+            public_id=file_name_no_ext,
+            overwrite=True
+        )
+        pdf_url = upload_result["secure_url"]
 
+        # Enviar WhatsApp con el link
         vars = {
             "1": nickname,
-            "2": pdf_name_without_ext  # sin .pdf
+            "2": file_name_no_ext
         }
 
         twilio.send_whatsapp_template(
             to_e164=f"+502{telefono}",
             content_sid=settings.TWILIO_TEMPLATE_SID,
             vars=vars,
-            pdf_bytes=buffer.getvalue(),
-            pdf_prefix=nickname
+            pdf_bytes=None  # ya está en Cloudinary, no se vuelve a subir
         )
+
     except Exception as e:
         print("⚠️ WhatsApp no enviado:", e)
+
+    # ─── Subir PDF a Cloudinary ─────────────────────────────────────
+    file_name_no_ext = Path(nickname).stem or "registro"
+
+    upload_result = cloudinary.uploader.upload(
+        buffer.getvalue(),
+        resource_type="raw",                    # los PDF van como raw
+        folder=settings.CLOUDINARY_FOLDER,      # carpeta lógica en Cloudinary
+        public_id=file_name_no_ext,             # nombre sin extensión
+        overwrite=True
+    )
+
+    pdf_url = upload_result["secure_url"]       # ← URL pública HTTPS
+    
 
     buffer.seek(0)
     res = HttpResponse(buffer, content_type="application/pdf")
