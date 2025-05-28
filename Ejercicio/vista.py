@@ -314,9 +314,11 @@ def registro_pdf(request):
         resource_type="raw",
         folder=settings.CLOUDINARY_FOLDER,
         public_id=public_id,
-        overwrite=True
+        overwrite=True,
+        access_mode="public"            # ← línea añadida
     )
     pdf_url = upload_res["secure_url"]  # termina en .pdf
+    print("📄 Cloudinary URL:", pdf_url)
 
     vars = {"1": nickname, "2": file_base}
     try:
@@ -324,8 +326,7 @@ def registro_pdf(request):
             to_e164=f"+502{telefono}",
             content_sid=settings.TWILIO_TEMPLATE_SID,
             vars=vars,
-            pdf_bytes=None,
-            override_media_url=pdf_url
+            override_media_url=pdf_url     # ← fuerza la URL de Cloudinary
         )
     except Exception as e:
         print("⚠️ WhatsApp no enviado:", e)
