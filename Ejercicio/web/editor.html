@@ -231,9 +231,7 @@
           <li onclick="pararCoreografia()">Parar coreografía</li>
         </ul>
       </li>
-      <li id="helpBtn" style="cursor: pointer; display: flex; align-items: center; padding: 0 15px; color: #fff;">
-      <i class="fas fa-question-circle" style="margin-right: 5px;"></i>Ayuda
-    </li>
+
     </ul>
   </nav>
 
@@ -244,6 +242,21 @@
       <option value="Arial">Arial</option>
       <option value="Verdana">Verdana</option>
     </select>
+    <button id="helpBtn"
+          title="Ver comandos disponibles"
+          style="
+            margin-right:8px;
+            background:#3c3c3c;
+            color:#fff;
+            border:none;
+            padding:5px;
+            border-radius:3px;
+            font-size:14px;
+            cursor:pointer;
+          ">
+    <i class="fas fa-question-circle"></i>
+    Ayuda
+  </button>
     <select id="sel-tamano" title="Tamaño" onchange="cambiarTamano(this.value)">
       <option value="12">12px</option>
       <option value="14" selected>14px</option>
