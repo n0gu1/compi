@@ -226,6 +226,9 @@
           <li onclick="pararCoreografia()">Parar coreografía</li>
         </ul>
       </li>
+      <li id="helpBtn" style="cursor: pointer; display: flex; align-items: center; padding: 0 15px; color: #fff;">
+      <i class="fas fa-question-circle" style="margin-right: 5px;"></i>Ayuda comandos
+    </li>
     </ul>
   </nav>
 
@@ -1162,6 +1165,27 @@ if (typeof window.lanzarSimulador === 'function') {
   };
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+  const helpBtn  = document.getElementById('helpBtn');
+  const helpModal = document.getElementById('helpModal');
+  const helpClose = document.getElementById('helpClose');
+
+  helpBtn.addEventListener('click', () => {
+    helpModal.style.display = 'flex';
+  });
+
+  helpClose.addEventListener('click', () => {
+    helpModal.style.display = 'none';
+  });
+
+  // clic fuera del cuadro central
+  helpModal.addEventListener('click', e => {
+    if (e.target === helpModal) {
+      helpModal.style.display = 'none';
+    }
+  });
+});
+
 </script>
 <!-- Reproductor de SoundCloud (oculto) -->
 <iframe id="player" style="display:none;" width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"
@@ -1183,6 +1207,98 @@ if (typeof window.lanzarSimulador === 'function') {
   <ul id="bitacoraList" style="list-style:none;padding-left:0;margin:0;"></ul>
 </div>
 
+<div id="helpModal" style="
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  justify-content: center;
+  align-items: center;
+  z-index: 1001;
+">
+  <div style="
+    background: #1e1e1e;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow: auto;
+    position: relative;
+  ">
+    <span id="helpClose" style="
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 1.5rem;
+      cursor: pointer;
+    ">&times;</span>
+    <h2 style="margin-top:0;">Comandos disponibles</h2>
+    <table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+      <thead>
+        <tr>
+          <th style="border:1px solid #ccc;padding:6px;">Instrucción</th>
+          <th style="border:1px solid #ccc;padding:6px;">Significado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="border:1px solid #ccc;padding:6px;">avanzar_vlts(n);</td>
+          <td style="border:1px solid #ccc;padding:6px;">
+            Avanza <em>n</em> vueltas de rueda; positivo adelante, negativo atrás.
+          </td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #ccc;padding:6px;">avanzar_ctms(n);</td>
+          <td style="border:1px solid #ccc;padding:6px;">
+            Avanza <em>n</em> centímetros; positivo adelante, negativo atrás.
+          </td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #ccc;padding:6px;">avanzar_mts(n);</td>
+          <td style="border:1px solid #ccc;padding:6px;">
+            Avanza <em>n</em> metros; positivo adelante, negativo atrás.
+          </td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #ccc;padding:6px;">girar(n);</td>
+          <td style="border:1px solid #ccc;padding:6px;">
+            <em>n=1</em> gira a la derecha; <em>n=-1</em> gira a la izquierda; <em>n=0</em> recto.
+          </td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #ccc;padding:6px;">circulo(r);</td>
+          <td style="border:1px solid #ccc;padding:6px;">
+            Dibuja un círculo de radio <em>r</em> (10–200 cm).
+          </td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #ccc;padding:6px;">cuadrado(l);</td>
+          <td style="border:1px solid #ccc;padding:6px;">
+            Dibuja un cuadrado de lado <em>l</em> (10–200 cm).
+          </td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #ccc;padding:6px;">rotar(n);</td>
+          <td style="border:1px solid #ccc;padding:6px;">
+            Rota <em>n</em> vueltas completas; positivo derecha, negativo izquierda.
+          </td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #ccc;padding:6px;">caminar(n);</td>
+          <td style="border:1px solid #ccc;padding:6px;">
+            Camina <em>n</em> pasos; positivo adelante, negativo atrás.
+          </td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #ccc;padding:6px;">moonwalk(n);</td>
+          <td style="border:1px solid #ccc;padding:6px;">
+            Moonwalk: desliza <em>n</em> pasos atrás/adelante.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
 
 </body>
 </html>
