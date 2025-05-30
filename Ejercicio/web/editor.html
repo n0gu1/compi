@@ -1108,11 +1108,81 @@ function cargarCoreografia(num){
     actualizarLineas();
     resaltar();
   };
+
+  // === Lógica de bitácora (tipo pila) ===
+const bitacoraStack = [];
+
+function logAction(msg) {
+  const ts = new Date().toLocaleTimeString();
+  bitacoraStack.push({ ts, msg });
+  const li = document.createElement('li');
+  li.textContent = `[${ts}] ${msg}`;
+  document.getElementById('bitacoraList').appendChild(li);
+}
+
+// — Hooks para compilar y simular —
+
+const originalCompilar = compilar;
+compilar = async function() {
+  logAction('Iniciando compilación');
+  await originalCompilar();
+  setTimeout(() => {
+    logAction('Compilación terminada');
+  }, 0);
+};
+
+const originalCompilarSimular = compilarSimular;
+compilarSimular = async function() {
+  logAction('Iniciando compilación + simulación');
+  await originalCompilarSimular();
+  logAction('Simulación lanzada');
+};
+
+const originalCompilarEjecutar = compilarEjecutar;
+compilarEjecutar = async function() {
+  logAction('Iniciando compilación + ejecución');
+  await originalCompilarEjecutar();
+  logAction('Ejecución enviada al rover');
+};
+
+// — Captura errores de análisis/síntesis —
+window.addEventListener('error', e => {
+  logAction('Error JS: ' + e.message);
+});
+
+// ─── Capturar comandos del simulador ───
+if (typeof window.lanzarSimulador === 'function') {
+  const _origLanzar = window.lanzarSimulador;
+  window.lanzarSimulador = function(cmds) {
+    // cmds es un array de [comando, valor]
+    cmds.forEach(([cmd, val]) => {
+      logAction(`Comando ejecutado → ${cmd}(${val})`);
+    });
+    return _origLanzar.apply(this, arguments);
+  };
+}
+
 </script>
 <!-- Reproductor de SoundCloud (oculto) -->
 <iframe id="player" style="display:none;" width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"
   src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/snipeyoung/snipe-young-beyonce-jay-z&auto_play=false"></iframe>
 <script src="https://w.soundcloud.com/player/api.js"></script>
+
+<!-- Bitácora de acciones -->
+<div id="bitacoraConsole" style="
+  height: 200px;
+  overflow-y: auto;
+  background: #1e1e1e;
+  color: #eee;
+  font-family: monospace;
+  padding: 10px;
+  border-top: 1px solid #444;
+  margin-top: 20px;
+">
+  <h3 style="margin:0 0 8px;font-size:1rem;color:#ccc;">Bitácora</h3>
+  <ul id="bitacoraList" style="list-style:none;padding-left:0;margin:0;"></ul>
+</div>
+
 
 </body>
 </html>
