@@ -7,7 +7,7 @@ from django.conf import settings
 
 # URL del Rover (NodeMCU)
 # ROVER_URL = f"http://{getattr(settings, 'ROVER_IP', '192.168.4.1')}/"
-ROVER_URL = "https://bbf5-2800-98-1090-1b4-2910-6764-2c94-35a0.ngrok-free.app"
+ROVER_URL = "https://1106-2800-98-1b21-c798-edd5-3b0c-af66-6b54.ngrok-free.app"
 
 
 # Retardos por letra (en segundos)
