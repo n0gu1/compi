@@ -943,20 +943,31 @@ function detenerAudioCoreografia() {
   widget.pause();  // Pausa la música
 }
 
-function pararCoreografia () {
+function pararCoreografia() {
+  clearInterval(intervalo);
+  intervalo = null;
+  ejecutando = false;
 
-  /* 1) Detener la animación (física + render) */
-  if (typeof sim !== 'undefined' && sim) {
-    sim.playing = false;        // pausa la física
+  document.getElementById('btnPlay').disabled = false;
+  document.getElementById('btnStop').disabled = true;
+  document.getElementById('btnReset').disabled = false;
+
+  if (coreografiaActual === 1) {
+    detenerAudioCoreografia();
   }
-  if (raf) cancelAnimationFrame(raf);
+  else if (coreografiaActual === 2) {
+    detenerAudioCoreografia2();
+  }
+  else if (coreografiaActual === 3) {
+    detenerAudioCoreografia3();   // ← detiene la pista 3
+  }
 
-  /* 2) Liberar el objeto para el próximo uso ──► AQUÍ */
-  if (sim) sim = null;
-
-  /* 3) Detener la música (independiente del simulador) */
-  detenerAudioCoreografia();
+  console.log(`🛑 Coreografía ${coreografiaActual} detenida.`);
+  coreografiaActual = 0;         // (opcional: reiniciar indicador)
 }
+
+
+
 
 
 
@@ -1028,8 +1039,90 @@ BEGIN
     circulo(40);
     caminar(6);
 END.`,
-    2: `PROGRAM coreo2\nBEGIN\n  circulo(20);\n  girar(1);\n  circulo(20);\nEND.`,
-    3: `PROGRAM coreo3\nBEGIN\n  cuadrado(10);\n  girar(1);\n  cuadrado(10);\nEND.`,
+    2: `PROGRAM shufle  
+BEGIN  
+    moonwalk(24);  
+    avanzar_vlts(4);  
+    girar(1);  
+    avanzar_vlts(-4);  
+
+    avanzar_ctms(20);  
+    girar(1);  
+
+    rotar(2);  
+    caminar(8);  
+    avanzar_vlts(2);  
+
+    circulo(30);  
+    avanzar_ctms(50);  
+
+    cuadrado(40);  
+    rotar(4);  
+    moonwalk(6);  
+END.
+`,
+    3: `PROGRAM Triller
+BEGIN
+    rotar(1);
+    avanzar_vlts(2);
+
+    cuadrado(30);
+    girar(1);
+    circulo(20);
+
+    avanzar_ctms(10);
+    rotar(-1);
+    caminar(4);
+
+    avanzar_vlts(-3);
+    girar(-1);
+    cuadrado(15);
+
+    rotar(2);
+    avanzar_ctms(50);
+    circulo(40);
+    caminar(6);
+
+    rotar(1);
+    avanzar_vlts(2);
+
+    cuadrado(30);
+    girar(1);
+    circulo(20);
+
+    avanzar_ctms(50);
+    rotar(-1);
+    caminar(4);
+
+    avanzar_vlts(-3);
+    girar(-1);
+    cuadrado(15);
+
+    rotar(2);
+    avanzar_ctms(50);
+    circulo(40);
+    caminar(6);
+
+    rotar(1);
+    avanzar_vlts(2);
+
+    cuadrado(30);
+    girar(1);
+    circulo(20);
+
+    avanzar_ctms(50);
+    rotar(-1);
+    caminar(4);
+
+    avanzar_vlts(-3);
+    girar(-1);
+    cuadrado(15);
+
+    rotar(2);
+    avanzar_ctms(50);
+    circulo(40);
+    caminar(6);
+END.`,
     4: `PROGRAM coreo4\nBEGIN\n  avanzar_mts(5);\n  circulo(2);\n  girar(1);\n  moonwalk(3);\nEND.`
   };
 
@@ -1040,7 +1133,24 @@ END.`,
     resaltar();
     compilarEjecutar();
 
-    if (num === 1) reproducirAudioCoreografia();  // 🔊 Solo para coreografía 1
+    // ═════ AUDIO según coreografía ═════
+    if (num === 1) {
+      reproducirAudioCoreografia();
+      detenerAudioCoreografia2();
+    }
+    else if (num === 2) {
+      reproducirAudioCoreografia2();
+      detenerAudioCoreografia();
+    }
+    // ← AÑADE este bloque ↓ para el caso 3:
+    else if (num === 3) {
+      reproducirAudioCoreografia3();   // inicia player3
+      detenerAudioCoreografia();       // pausa player1, por si estuviera sonando
+      detenerAudioCoreografia2();      // pausa player2, si estuviera sonando
+
+    
+      
+    }
   }
 }
 
@@ -1265,11 +1375,62 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+/* ══════════ Coreografía 2 – SoundCloud ══════════ */
+let widget2 = null;
+
+function reproducirAudioCoreografia2() {
+  if (!widget2) {
+    widget2 = SC.Widget(document.getElementById('player2'));
+  }
+  widget2.bind(SC.Widget.Events.READY, () => {
+    widget2.seekTo(0);
+    widget2.play();
+  });
+}
+
+function detenerAudioCoreografia2() {
+  if (widget2) widget2.pause();
+}
+
+/* ══════════ Coreografía 3 – SoundCloud ══════════ */
+let widget3 = null;
+function reproducirAudioCoreografia3() {
+  if (!widget3) {
+    widget3 = SC.Widget(document.getElementById('player3'));
+  }
+  widget3.bind(SC.Widget.Events.READY, () => {
+    widget3.seekTo(0);
+    widget3.play();
+  });
+}
+function detenerAudioCoreografia3() {
+  if (widget3) widget3.pause();
+}
+
+
 </script>
 <!-- Reproductor de SoundCloud (oculto) -->
 <iframe id="player" style="display:none;" width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"
   src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/snipeyoung/snipe-young-beyonce-jay-z&auto_play=false"></iframe>
 <script src="https://w.soundcloud.com/player/api.js"></script>
+<!-- Reproductor SoundCloud ▸ Coreografía 2 -->
+<iframe id="player2"
+        style="width:0;height:0;opacity:0;pointer-events:none"
+        scrolling="no" frameborder="no"
+        allow="autoplay"
+        src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/alonso-martinez-544176789/alan-walker-faded-remix-shuffle-dance-music-video-electro-house&auto_play=false">
+</iframe>
+<!-- Reproductor SoundCloud ▸ Coreografía 3 -->
+<iframe
+  id="player3"
+  style="width:0;height:0;opacity:0;pointer-events:none"
+  scrolling="no"
+  frameborder="no"
+  allow="autoplay"
+  src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/darion-lopez-38557354/thriller-michael-jackson&auto_play=false">
+</iframe>
+
+
 
 <!-- Bitácora de acciones -->
 <div id="bitacoraConsole" style="
