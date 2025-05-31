@@ -108,14 +108,22 @@ def execute(commands: list[list]) -> None:
             _send("S")
             continue
 
-        # --- Rotar sobre propio eje n vueltas (pivot) ---
         if cmd == "rotar":
+            # 1) Validar que n no sea 0
+            if n == 0:
+                continue
+
+            # 2) Elegir letra según signo de n
             letter = "R" if n > 0 else "L"
+
+            # 3) Enviar exactamente abs(n) pulsos (antes enviaba 4 × abs(n))
             for _ in range(abs(n)):
-                for _ in range(PULSES_PER_REV):
-                    _send(letter)
-                _send("S")
+                _send(letter)
+
+            # 4) Enviar "S" final para detener
+            _send("S")
             continue
+
 
         # --- Caminar n pasos simulando pasos individuales ---
         if cmd == "caminar":
@@ -146,13 +154,28 @@ def execute(commands: list[list]) -> None:
             _send("S")
             continue
 
-        # --- Avanzar metros reales ---
         if cmd == "avanzar_mts":
+            # 1) Validar que n no sea 0
+            if n == 0:
+                continue
+
+            # 2) Elegir dirección (F para positivo, B para negativo)
             letter = "F" if n > 0 else "B"
-            try: requests.get(ROVER_URL, params={"State": letter}, timeout=2)
-            except: pass
-            time.sleep(CM_DELAY_PER_CM * abs(n) * 100)
-            _send("S")
+
+            # 3) Repetir por cada metro: enviar "F", dormir 100*CM_DELAY_PER_CM, enviar "S"
+            for _ in range(abs(n)):
+                # Enviar un pulso de avance
+                try:
+                    requests.get(ROVER_URL, params={"State": letter}, timeout=2)
+                except requests.RequestException:
+                    pass
+
+                # Dormir el tiempo necesario para recorrer 100 cm
+                time.sleep(CM_DELAY_PER_CM * 100)
+
+                # Detener movimiento (pausa breve)
+                _send("S")
+
             continue
 
         # --- Resto de comandos via translate() ---
